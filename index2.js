@@ -1,45 +1,9 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import React, { useState } from "react";
 
 export default function Home() {
-  const [C1step1, setC1step1] = useState("");
-  const [C2step1, setC2step1] = useState("");
-  const [C1step2, setC1step2] = useState("");
-  const [C2step2, setC2step2] = useState("");
-  const [crossbreedR, setcrossbreedR] = useState([]);
-  const [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
-
   let genePool = [];
-  /* const genePool = [
-    ["g", "h", "x", "w", "h", "y"],
-    ["y", "g", "y", "w", "x", "y"],
-    ["y", "h", "h", "x", "g", "h"],
-    ["y", "h", "h", "g", "g", "h"],
-    ["x", "h", "g", "y", "g", "x"],
-    ["w", "g", "y", "g", "g", "w"],
-    ["h", "h", "y", "h", "w", "h"],
-    ["y", "y", "y", "h", "x", "h"],
-    ["g", "h", "g", "h", "w", "x"],
-    ["g", "y", "y", "y", "w", "h"],
-    ["y", "g", "y", "y", "h", "h"],
-    ["g", "h", "w", "g", "h", "y"],
-  ]; */
-  /* const genePool = [
-    ["y", "g", "h", "h", "y", "y"],
-    ["x", "y", "h", "h", "g", "x"],
-    ["x", "x", "y", "h", "g", "g"],
-    ["h", "y", "y", "h", "h", "g"],
-    ["y", "h", "x", "y", "y", "h"],
-    ["y", "h", "w", "y", "y", "h"],
-    ["y", "g", "g", "x", "g", "h"],
-    ["y", "g", "g", "h", "g", "h"],
-    ["y", "g", "h", "x", "g", "w"],
-    ["h", "h", "y", "x", "w", "y"],
-    ["y", "h", "y", "y", "x", "x"],
-    ["y", "y", "x", "y", "x", "g"],
-  ]; */
   /*   const genePool = [
     ["y", "x", "x", "h", "y", "y"],
     ["y", "y", "y", "h", "h", "h"],
@@ -61,6 +25,7 @@ export default function Home() {
   let singleCloneList = [];
   let geneWeightingList = [];
   let geneWeighting = [];
+  let cloneWithHighestRating = [];
   let clonesWithMostCommonGenes = [];
   let commonPosition = [];
   let genes = [];
@@ -76,17 +41,18 @@ export default function Home() {
   let crossbreedResults = [];
   let gPositionOfClones = [];
   let yPositionOfClones = [];
-
+  let C1step1 = "";
+  let C2step1 = "";
+  let C1step2 = "";
+  let C2step2 = "";
   let clone = [];
 
   function findCrossbreadPair() {
-    //how many G or Y Genes does the best Clone need
     let needG = perfectHempSeedG - cloneWithHighestRating.g;
     let needY = perfectHempSeedY - cloneWithHighestRating.y;
     let iteration = "";
     let stepIteration = 0;
 
-    //If it needs both G and Y Genes it
     if (needG > 0 && needY > 0) {
       for (let i = 0; i < genePool.length; i++) {
         cloneWithHighestRating.positionBadGenes.map((position) => {
@@ -114,26 +80,24 @@ export default function Home() {
         }
       } else {
         for (let i = 0; i < genePool.length; i++) {
-          cloneWithHighestRating.positionBadGenes
-            ? cloneWithHighestRating.positionBadGenes.map((position) => {
-                if (genePool[i][position] === "y") {
-                  if (iteration === i) {
-                    return;
-                  }
-                  iteration = i;
-                  neededClones.push(singleCloneList[i]);
-                }
-              })
-            : {};
+          cloneWithHighestRating.positionBadGenes.map((position) => {
+            if (genePool[i][position] === "y") {
+              if (iteration === i) {
+                return;
+              }
+              iteration = i;
+              neededClones.push(singleCloneList[i]);
+            }
+          });
         }
       }
     }
 
-    for (let i = 0; i <= neededClones.length - 1; i++) {
-      for (let j = i + 1; j <= neededClones.length - 1; j++) {
+    for (let i = 0; i < neededClones.length - 1; i++) {
+      for (let j = i + 1; j < neededClones.length - 1; j++) {
         cloneWithHighestRating.positionBadGenes.map((position, index) => {
-          let geneOne = neededClones[i] ? neededClones[i].clone[position] : "";
-          let geneTwo = neededClones[j] ? neededClones[j].clone[position] : "";
+          let geneOne = neededClones[i].clone[position];
+          let geneTwo = neededClones[j].clone[position];
           let badClone = false;
 
           if (geneOne === geneTwo) {
@@ -145,21 +109,13 @@ export default function Home() {
                   }
                 }
               });
-
               if (!badClone) {
                 if (geneOne === "y") {
                   if (needY > 0) {
-                    potentialYClones.push({
-                      position: position,
-                      cloneInfo: neededClones[i],
-                    });
-                    potentialYClones.push({
-                      position: position,
-                      cloneInfo: neededClones[j],
-                    });
+                    potentialYClones.push({ position: position, cloneInfo: neededClones[i] });
+                    potentialYClones.push({ position: position, cloneInfo: neededClones[j] });
                     let positionExists = (element) => element === position;
-                    let indexOfPosition =
-                      yPositionOfClones.findIndex(positionExists);
+                    let indexOfPosition = yPositionOfClones.findIndex(positionExists);
                     if (indexOfPosition !== -1) {
                       yPositionOfClones.splice(indexOfPosition, 1, position);
                     } else {
@@ -169,17 +125,10 @@ export default function Home() {
                 }
                 if (geneOne === "g") {
                   if (needG > 0) {
-                    potentialGClones.push({
-                      position: position,
-                      cloneInfo: neededClones[i],
-                    });
-                    potentialGClones.push({
-                      position: position,
-                      cloneInfo: neededClones[j],
-                    });
+                    potentialGClones.push({ position: position, cloneInfo: neededClones[i] });
+                    potentialGClones.push({ position: position, cloneInfo: neededClones[j] });
                     let positionExists = (element) => element === position;
-                    let indexOfPosition =
-                      gPositionOfClones.findIndex(positionExists);
+                    let indexOfPosition = gPositionOfClones.findIndex(positionExists);
                     if (indexOfPosition !== -1) {
                       gPositionOfClones.splice(indexOfPosition, 1, position);
                     } else {
@@ -232,41 +181,28 @@ export default function Home() {
           crossbreedCloneStepbefore = lastCBResult.clone.slice();
         }
         if (potentialGClones[i].position === positionNeeded) {
-          if (
-            potentialGClones[i] !== undefined &&
-            potentialGClones[i + 1] !== undefined
-          ) {
-            finalGClones.push({
-              [positionNeeded]: potentialGClones[i].cloneInfo.clone,
-            });
+          if (potentialGClones[i] !== undefined && potentialGClones[i + 1] !== undefined) {
+            finalGClones.push({ [positionNeeded]: potentialGClones[i].cloneInfo.clone });
             finalGClones.push({
               [positionNeeded]: potentialGClones[i + 1].cloneInfo.clone,
             });
             if (lastCBResult !== "") {
               if (lastCBResult.position !== positionNeeded) {
-                crossbreedResults.push({
-                  position: positionNeeded,
-                  clone: crossbreedCloneStepbefore,
-                });
+                crossbreedResults.push({ position: positionNeeded, clone: crossbreedCloneStepbefore });
                 crossbreedResults[stepIteration].clone.splice(
                   positionNeeded,
                   1,
                   potentialGClones[i].cloneInfo.clone[positionNeeded]
                 );
-                setcrossbreedR(crossbreedResults);
                 stepIteration++;
               }
             } else {
-              crossbreedResults.push({
-                position: positionNeeded,
-                clone: crossbreedCloneStepbefore,
-              });
+              crossbreedResults.push({ position: positionNeeded, clone: crossbreedCloneStepbefore });
               crossbreedResults[stepIteration].clone.splice(
                 positionNeeded,
                 1,
                 potentialGClones[i].cloneInfo.clone[positionNeeded]
               );
-              setcrossbreedR(crossbreedResults);
               stepIteration++;
             }
           }
@@ -289,63 +225,34 @@ export default function Home() {
           crossbreedCloneStepbefore = lastCBResult.clone.slice();
         }
         if (potentialYClones[i].position === positionNeeded) {
-          if (
-            potentialYClones[i] !== undefined &&
-            potentialYClones[i + 1] !== undefined
-          ) {
-            finalYClones.push({
-              [positionNeeded]: potentialYClones[i].cloneInfo.clone,
-            });
+          if (potentialYClones[i] !== undefined && potentialYClones[i + 1] !== undefined) {
+            finalYClones.push({ [positionNeeded]: potentialYClones[i].cloneInfo.clone });
             finalYClones.push({
               [positionNeeded]: potentialYClones[i + 1].cloneInfo.clone,
             });
             if (lastCBResult) {
               if (lastCBResult.position !== positionNeeded) {
-                crossbreedResults.push({
-                  position: positionNeeded,
-                  clone: crossbreedCloneStepbefore,
-                });
+                crossbreedResults.push({ position: positionNeeded, clone: crossbreedCloneStepbefore });
                 crossbreedResults[stepIteration].clone.splice(
                   positionNeeded,
                   1,
                   potentialYClones[i].cloneInfo.clone[positionNeeded]
                 );
-                setcrossbreedR(crossbreedResults);
                 stepIteration++;
               }
             } else {
-              crossbreedResults.push({
-                position: positionNeeded,
-                clone: crossbreedCloneStepbefore,
-              });
+              crossbreedResults.push({ position: positionNeeded, clone: crossbreedCloneStepbefore });
               crossbreedResults[stepIteration].clone.splice(
                 positionNeeded,
                 1,
                 potentialYClones[i].cloneInfo.clone[positionNeeded]
               );
-              setcrossbreedR(crossbreedResults);
               stepIteration++;
             }
           }
         }
       }
     });
-
-    console.log(commonGeneList);
-    console.log(singleCloneList);
-    console.log(geneWeightingList);
-    console.log(geneWeighting);
-    console.log(cloneWithHighestRating);
-    console.log(clonesWithMostCommonGenes);
-    console.log(commonPosition);
-    console.log(genes);
-    console.log(otherGenes);
-    console.log(weakGenesRating);
-    console.log(perfectHempSeedY);
-    console.log(perfectHempSeedG);
-    console.log(neededClones);
-    console.log(gPositionOfClones);
-    console.log(yPositionOfClones);
   }
 
   function giveGeneWeighting() {
@@ -411,7 +318,7 @@ export default function Home() {
     singleCloneList.map((clones) => {
       if (highestRating < clones.rating) {
         highestRating = clones.rating;
-        setCloneWithHighestRating(clones);
+        cloneWithHighestRating = clones;
       }
     });
   }
@@ -465,13 +372,10 @@ export default function Home() {
     cloneWithHighestRating.positionBadGenes.map((position, count) => {
       if (count === 0) {
         finalGClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalGClones[index + 1] !== undefined
-          ) {
+          if (clone[position] !== undefined && finalGClones[index + 1] !== undefined) {
             if (finalGClones[index + 1][position] !== undefined) {
-              setC1step1(clone[position]);
-              setC2step1(finalGClones[index + 1][position]);
+              C1step1 = clone[position];
+              C2step1 = finalGClones[index + 1][position];
             }
           }
         });
@@ -480,13 +384,10 @@ export default function Home() {
     cloneWithHighestRating.positionBadGenes.map((position, count) => {
       if (count === 0) {
         finalYClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalYClones[index + 1] !== undefined
-          ) {
+          if (clone[position] !== undefined && finalYClones[index + 1] !== undefined) {
             if (finalYClones[index + 1][position] !== undefined) {
-              setC1step1(clone[position]);
-              setC2step1(finalYClones[index + 1][position]);
+              C1step1 = clone[position];
+              C2step1 = finalYClones[index + 1][position];
             }
           }
         });
@@ -500,13 +401,10 @@ export default function Home() {
     cloneWithHighestRating.positionBadGenes.map((position, count) => {
       if (count === 1) {
         finalGClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalGClones[index + 1] !== undefined
-          ) {
+          if (clone[position] !== undefined && finalGClones[index + 1] !== undefined) {
             if (finalGClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalGClones[index + 1][position]);
+              C1step2 = clone[position];
+              C2step2 = finalGClones[index + 1][position];
             }
           }
         });
@@ -515,13 +413,10 @@ export default function Home() {
     cloneWithHighestRating.positionBadGenes.map((position, count) => {
       if (count === 1) {
         finalYClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalYClones[index + 1] !== undefined
-          ) {
+          if (clone[position] !== undefined && finalYClones[index + 1] !== undefined) {
             if (finalYClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalYClones[index + 1][position]);
+              C1step2 = clone[position];
+              C2step2 = finalYClones[index + 1][position];
             }
           }
         });
@@ -535,13 +430,10 @@ export default function Home() {
     cloneWithHighestRating.positionBadGenes.map((position, count) => {
       if (count === 2) {
         finalGClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalGClones[index + 1] !== undefined
-          ) {
+          if (clone[position] !== undefined && finalGClones[index + 1] !== undefined) {
             if (finalGClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalGClones[index + 1][position]);
+              C1step2 = clone[position];
+              C2step2 = finalGClones[index + 1][position];
             }
           }
         });
@@ -550,13 +442,10 @@ export default function Home() {
     cloneWithHighestRating.positionBadGenes.map((position, count) => {
       if (count === 2) {
         finalYClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalYClones[index + 1] !== undefined
-          ) {
+          if (clone[position] !== undefined && finalYClones[index + 1] !== undefined) {
             if (finalYClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalYClones[index + 1][position]);
+              C1step2 = clone[position];
+              C2step2 = finalYClones[index + 1][position];
             }
           }
         });
@@ -565,14 +454,12 @@ export default function Home() {
   }
 
   function addGenes(e) {
-    clone[e.target.id] = e.target.value;
+    clone[e.target.name] = e.target.value;
+    console.log(clone);
   }
   function addClone() {
     genePool.push(clone.slice());
-    const inputFields = document.querySelectorAll(".geneInput");
-    inputFields.forEach((input) => {
-      input.value = "";
-    });
+    console.log(genePool);
 
     giveGeneWeighting();
     findBestTwoClones();
@@ -581,22 +468,11 @@ export default function Home() {
     step1();
     step2();
     step3();
-    console.log(genePool);
-    console.log(neededClones);
-    console.log(cloneWithHighestRating);
+    console.log(C1step1);
   }
 
   return (
     <div className={styles.container}>
-      {giveGeneWeighting()}
-      {findBestTwoClones()}
-      {findBestSingleClone()}
-
-      {findCrossbreadPair()}
-      {step1()}
-      {step2()}
-      {step3()}
-
       <Head>
         <title>Gene Counting</title>
         <meta name="description" content="Generated by create next app" />
@@ -607,7 +483,7 @@ export default function Home() {
         <input
           className="geneInput"
           type="text"
-          id="0"
+          name="0"
           onChange={(e) =>
             e.target.value === "y" ||
             e.target.value === "g" ||
@@ -621,7 +497,7 @@ export default function Home() {
         <input
           className="geneInput"
           type="text"
-          id="1"
+          name="1"
           onChange={(e) =>
             e.target.value === "y" ||
             e.target.value === "g" ||
@@ -635,7 +511,7 @@ export default function Home() {
         <input
           className="geneInput"
           type="text"
-          id="2"
+          name="2"
           onChange={(e) =>
             e.target.value === "y" ||
             e.target.value === "g" ||
@@ -649,7 +525,7 @@ export default function Home() {
         <input
           className="geneInput"
           type="text"
-          id="3"
+          name="3"
           onChange={(e) =>
             e.target.value === "y" ||
             e.target.value === "g" ||
@@ -663,7 +539,7 @@ export default function Home() {
         <input
           className="geneInput"
           type="text"
-          id="4"
+          name="4"
           onChange={(e) =>
             e.target.value === "y" ||
             e.target.value === "g" ||
@@ -677,7 +553,7 @@ export default function Home() {
         <input
           className="geneInput"
           type="text"
-          id="5"
+          name="5"
           onChange={(e) =>
             e.target.value === "y" ||
             e.target.value === "g" ||
@@ -692,7 +568,6 @@ export default function Home() {
           Add Clone
         </button>
       </div>
-
       <div className="flex">
         <div>
           <h1>Step One: </h1>
@@ -703,42 +578,26 @@ export default function Home() {
             <p>{cloneWithHighestRating.clone}</p>
           </div>
         </div>
-        {cloneWithHighestRating.positionBadGenes ? (
-          cloneWithHighestRating.positionBadGenes.length > 1 ? (
-            <div>
-              <h1>Step Two: </h1>
+        <div>
+          <h1>Step Two: </h1>
 
-              <div>
-                <p>{C1step2}</p>
-                <p>{C2step2}</p>
-                <p>{crossbreedR[0] ? crossbreedR[0].clone : ""}</p>
-                <p>{crossbreedR[0] ? crossbreedR[0].clone : ""}</p>
-              </div>
-            </div>
-          ) : (
-            ""
-          )
-        ) : (
-          ""
-        )}
-        {cloneWithHighestRating.positionBadGenes ? (
-          cloneWithHighestRating.positionBadGenes.length > 2 ? (
-            <div>
-              <h1>Step Three: </h1>
+          <div>
+            <p>{C1step2}</p>
+            <p>{C2step2}</p>
+            <p>{crossbreedResults[0] ? crossbreedResults[0].clone : ""}</p>
+            <p>{crossbreedResults[0] ? crossbreedResults[0].clone : ""}</p>
+          </div>
+        </div>
+        <div>
+          <h1>Step Three: </h1>
 
-              <div>
-                <p>{C1step2}</p>
-                <p>{C2step2}</p>
-                <p>{crossbreedR[1] ? crossbreedR[1].clone : ""}</p>
-                <p>{crossbreedR[1] ? crossbreedR[1].clone : ""}</p>
-              </div>
-            </div>
-          ) : (
-            ""
-          )
-        ) : (
-          ""
-        )}
+          <div>
+            <p>{C1step2}</p>
+            <p>{C2step2}</p>
+            <p>{crossbreedResults[1] ? crossbreedResults[1].clone : ""}</p>
+            <p>{crossbreedResults[1] ? crossbreedResults[1].clone : ""}</p>
+          </div>
+        </div>
       </div>
       {/*         <button type="submit" action="post" onClick={findCrossbreadPair()}>
           check for best Genes

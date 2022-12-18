@@ -1,0 +1,19 @@
+form {
+  button {
+    width: 10%;
+  }
+}
+body {
+  background-color: rgb(43, 43, 43);
+  color: white;
+}
+.flex {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.geneInput {
+  width: 4rem;
+  height: 2rem;
+}
