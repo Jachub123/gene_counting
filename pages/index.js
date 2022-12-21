@@ -68,7 +68,8 @@ export default function Home() {
   let weakGenesRating = 0;
   let perfectHempSeedY = 4;
   let perfectHempSeedG = 2;
-  let neededClones = [];
+  let usableGeneList_g = [];
+  let usableGeneList_y = [];
   let potentialGClones = [];
   let potentialYClones = [];
   let finalGClones = [];
@@ -76,276 +77,12 @@ export default function Home() {
   let crossbreedResults = [];
   let gPositionOfClones = [];
   let yPositionOfClones = [];
+  let highestRating = 0;
 
   let clone = [];
 
-  function findCrossbreadPair() {
-    //how many G or Y Genes does the best Clone need
-    let needG = perfectHempSeedG - cloneWithHighestRating.g;
-    let needY = perfectHempSeedY - cloneWithHighestRating.y;
-    let iteration = "";
-    let stepIteration = 0;
-
-    //If it needs both G and Y Genes it
-    if (needG > 0 && needY > 0) {
-      for (let i = 0; i < genePool.length; i++) {
-        cloneWithHighestRating.positionBadGenes.map((position) => {
-          if (genePool[i][position] === "g" || genePool[i][position] === "y") {
-            if (iteration === i) {
-              return;
-            }
-            iteration = i;
-            neededClones.push(singleCloneList[i]);
-          }
-        });
-      }
-    } else {
-      if (needG) {
-        for (let i = 0; i < genePool.length; i++) {
-          cloneWithHighestRating.positionBadGenes.map((position) => {
-            if (genePool[i][position] === "g") {
-              if (iteration === i) {
-                return;
-              }
-              iteration = i;
-              neededClones.push(singleCloneList[i]);
-            }
-          });
-        }
-      } else {
-        for (let i = 0; i < genePool.length; i++) {
-          cloneWithHighestRating.positionBadGenes
-            ? cloneWithHighestRating.positionBadGenes.map((position) => {
-                if (genePool[i][position] === "y") {
-                  if (iteration === i) {
-                    return;
-                  }
-                  iteration = i;
-                  neededClones.push(singleCloneList[i]);
-                }
-              })
-            : {};
-        }
-      }
-    }
-
-    for (let i = 0; i <= neededClones.length - 1; i++) {
-      for (let j = i + 1; j <= neededClones.length - 1; j++) {
-        cloneWithHighestRating.positionBadGenes.map((position, index) => {
-          let geneOne = neededClones[i] ? neededClones[i].clone[position] : "";
-          let geneTwo = neededClones[j] ? neededClones[j].clone[position] : "";
-          let badClone = false;
-
-          if (geneOne === geneTwo) {
-            if (geneOne === "g" || geneOne === "y") {
-              neededClones[i].clone.map((gene, index2) => {
-                if (gene === "w" || gene === "x") {
-                  if (neededClones[j].clone[index2] === gene) {
-                    badClone = true;
-                  }
-                }
-              });
-
-              if (!badClone) {
-                if (geneOne === "y") {
-                  if (needY > 0) {
-                    potentialYClones.push({
-                      position: position,
-                      cloneInfo: neededClones[i],
-                    });
-                    potentialYClones.push({
-                      position: position,
-                      cloneInfo: neededClones[j],
-                    });
-                    let positionExists = (element) => element === position;
-                    let indexOfPosition =
-                      yPositionOfClones.findIndex(positionExists);
-                    if (indexOfPosition !== -1) {
-                      yPositionOfClones.splice(indexOfPosition, 1, position);
-                    } else {
-                      yPositionOfClones.push(position);
-                    }
-                  }
-                }
-                if (geneOne === "g") {
-                  if (needG > 0) {
-                    potentialGClones.push({
-                      position: position,
-                      cloneInfo: neededClones[i],
-                    });
-                    potentialGClones.push({
-                      position: position,
-                      cloneInfo: neededClones[j],
-                    });
-                    let positionExists = (element) => element === position;
-                    let indexOfPosition =
-                      gPositionOfClones.findIndex(positionExists);
-                    if (indexOfPosition !== -1) {
-                      gPositionOfClones.splice(indexOfPosition, 1, position);
-                    } else {
-                      gPositionOfClones.push(position);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
-    }
-
-    yPositionOfClones.map((positionY) => {
-      gPositionOfClones.map((positionG, index) => {
-        if (positionY === positionG) {
-          if (yPositionOfClones.length === gPositionOfClones.length) {
-            let deletePosition = gPositionOfClones.indexOf(positionG);
-            gPositionOfClones.splice(deletePosition, 1, "");
-            return;
-          }
-          if (yPositionOfClones.length > gPositionOfClones.length) {
-            let deletePosition = yPositionOfClones.indexOf(positionY);
-            yPositionOfClones.splice(deletePosition, 1, "");
-            return;
-          }
-          if (yPositionOfClones.length < gPositionOfClones.length) {
-            let deletePosition = gPositionOfClones.indexOf(positionG);
-            gPositionOfClones.splice(deletePosition, 1, "");
-            return;
-          }
-        }
-      });
-    });
-
-    gPositionOfClones.map((positionNeeded, counter) => {
-      let crossbreedCloneStepbefore = "";
-
-      for (let i = 0; i < potentialGClones.length; i += 2) {
-        let lastIndexOfCrossbreedResults = crossbreedResults.length - 1;
-        let lastCBResult = "";
-        if (crossbreedResults[lastIndexOfCrossbreedResults]) {
-          lastCBResult = crossbreedResults[lastIndexOfCrossbreedResults];
-        }
-
-        if (lastCBResult === "") {
-          crossbreedCloneStepbefore = cloneWithHighestRating.clone.slice();
-        } else {
-          crossbreedCloneStepbefore = lastCBResult.clone.slice();
-        }
-        if (potentialGClones[i].position === positionNeeded) {
-          if (
-            potentialGClones[i] !== undefined &&
-            potentialGClones[i + 1] !== undefined
-          ) {
-            finalGClones.push({
-              [positionNeeded]: potentialGClones[i].cloneInfo.clone,
-            });
-            finalGClones.push({
-              [positionNeeded]: potentialGClones[i + 1].cloneInfo.clone,
-            });
-            if (lastCBResult !== "") {
-              if (lastCBResult.position !== positionNeeded) {
-                crossbreedResults.push({
-                  position: positionNeeded,
-                  clone: crossbreedCloneStepbefore,
-                });
-                crossbreedResults[stepIteration].clone.splice(
-                  positionNeeded,
-                  1,
-                  potentialGClones[i].cloneInfo.clone[positionNeeded]
-                );
-                setcrossbreedR(crossbreedResults);
-                stepIteration++;
-              }
-            } else {
-              crossbreedResults.push({
-                position: positionNeeded,
-                clone: crossbreedCloneStepbefore,
-              });
-              crossbreedResults[stepIteration].clone.splice(
-                positionNeeded,
-                1,
-                potentialGClones[i].cloneInfo.clone[positionNeeded]
-              );
-              setcrossbreedR(crossbreedResults);
-              stepIteration++;
-            }
-          }
-        }
-      }
-    });
-    yPositionOfClones.map((positionNeeded, counter) => {
-      let crossbreedCloneStepbefore = "";
-
-      for (let i = 0; i < potentialYClones.length; i += 2) {
-        let lastIndexOfCrossbreedResults = crossbreedResults.length - 1;
-        let lastCBResult = "";
-        if (crossbreedResults[lastIndexOfCrossbreedResults]) {
-          lastCBResult = crossbreedResults[lastIndexOfCrossbreedResults];
-        }
-
-        if (lastCBResult === "") {
-          crossbreedCloneStepbefore = cloneWithHighestRating.clone.slice();
-        } else {
-          crossbreedCloneStepbefore = lastCBResult.clone.slice();
-        }
-        if (potentialYClones[i].position === positionNeeded) {
-          if (
-            potentialYClones[i] !== undefined &&
-            potentialYClones[i + 1] !== undefined
-          ) {
-            finalYClones.push({
-              [positionNeeded]: potentialYClones[i].cloneInfo.clone,
-            });
-            finalYClones.push({
-              [positionNeeded]: potentialYClones[i + 1].cloneInfo.clone,
-            });
-            if (lastCBResult) {
-              if (lastCBResult.position !== positionNeeded) {
-                crossbreedResults.push({
-                  position: positionNeeded,
-                  clone: crossbreedCloneStepbefore,
-                });
-                crossbreedResults[stepIteration].clone.splice(
-                  positionNeeded,
-                  1,
-                  potentialYClones[i].cloneInfo.clone[positionNeeded]
-                );
-                setcrossbreedR(crossbreedResults);
-                stepIteration++;
-              }
-            } else {
-              crossbreedResults.push({
-                position: positionNeeded,
-                clone: crossbreedCloneStepbefore,
-              });
-              crossbreedResults[stepIteration].clone.splice(
-                positionNeeded,
-                1,
-                potentialYClones[i].cloneInfo.clone[positionNeeded]
-              );
-              setcrossbreedR(crossbreedResults);
-              stepIteration++;
-            }
-          }
-        }
-      }
-    });
-
-    console.log(commonGeneList);
-    console.log(singleCloneList);
-    console.log(geneWeightingList);
-    console.log(geneWeighting);
-    console.log(cloneWithHighestRating);
-    console.log(clonesWithMostCommonGenes);
-    console.log(commonPosition);
-    console.log(genes);
-    console.log(otherGenes);
-    console.log(weakGenesRating);
-    console.log(perfectHempSeedY);
-    console.log(perfectHempSeedG);
-    console.log(neededClones);
-    console.log(gPositionOfClones);
-    console.log(yPositionOfClones);
+  function addGenes(e) {
+    clone[e.target.id] = e.target.value;
   }
 
   function giveGeneWeighting() {
@@ -363,10 +100,9 @@ export default function Home() {
       });
     }
   }
-  function findBestSingleClone() {
+  function rateClone() {
     let geneCounterY = 0;
     let geneCounterG = 0;
-    let highestRating = 0;
     let weakGenes = [];
     let positionBadGenes = [];
 
@@ -384,7 +120,7 @@ export default function Home() {
           }
         } else {
           if (gene === "x" || gene === "w") {
-            weakGenesRating = weakGenesRating - 0.4;
+            weakGenesRating = weakGenesRating - 0.9;
           }
           weakGenes.push(gene);
           positionBadGenes.push(index);
@@ -408,6 +144,9 @@ export default function Home() {
         }
       });
     }
+  }
+
+  function findBestClone() {
     singleCloneList.map((clones) => {
       if (highestRating < clones.rating) {
         highestRating = clones.rating;
@@ -416,157 +155,262 @@ export default function Home() {
     });
   }
 
-  function findBestTwoClones() {
-    let counter = 0;
-    let commonCounter = 0;
-    let highestAmount = 0;
+  function findUsableClones() {
+    //how many G or Y Genes does the best Clone need
+    let needG = perfectHempSeedG - cloneWithHighestRating.g;
+    let needY = perfectHempSeedY - cloneWithHighestRating.y;
+    let iteration = "";
+    let stepIteration = 0;
 
-    for (let i = 0; i < genePool.length - 1; i++) {
-      for (let j = i; j < genePool.length - 1; j++) {
-        genePool[j + 1].map((x, index) => {
-          if (x === "y" || x === "g") {
-            if (x === genePool[i][index]) {
-              const clone1 = i;
-              const clone2 = parseFloat(j) + parseFloat(1);
+    //If it needs both G and Y Genes it loops through the bad positions of the cloneWithHighestRating(CWHR)
+    //for each bad gene Position of the CWHR it searches the "genePool" for g or y genes at the same position
 
-              commonPosition.push(index);
-              genes.push(x);
-              counter++;
-              commonCounter++;
-              commonGeneList[counter] = {
-                commonGeneAmount: commonCounter,
-                commonPositions: commonPosition,
-                genes: genes,
-                clone1: genePool[clone1],
-                clone2: genePool[clone2],
-              };
-            }
-          }
-          if (index === 5) {
-            commonCounter = 0;
-            commonPosition = [];
-            genes = [];
+    if (needG > 0) {
+      for (let i = 0; i < genePool.length; i++) {
+        cloneWithHighestRating.positionBadGenes.map((position) => {
+          if (genePool[i][position] === "g") {
+            usableGeneList_g.push({
+              position: position,
+              clone: singleCloneList[i],
+            });
           }
         });
       }
     }
-    commonGeneList.map((commons) => {
-      if (highestAmount < commons.commonGeneAmount) {
-        highestAmount = commons.commonGeneAmount;
-        clonesWithMostCommonGenes.push(commons);
+    if (needY > 0) {
+      for (let i = 0; i < genePool.length; i++) {
+        cloneWithHighestRating.positionBadGenes.map((position) => {
+          if (genePool[i][position] === "y") {
+            usableGeneList_y.push({
+              position: position,
+              clone: singleCloneList[i],
+            });
+          }
+        });
       }
-    });
+    }
   }
 
-  function step1() {
-    if (!cloneWithHighestRating.positionBadGenes) {
-      return;
+  function findCrossbreadPair(cloneList) {
+    for (let i = 0; i < cloneList.length - 1; i++) {
+      for (let j = i + 1; j <= cloneList.length - 1; j++) {
+        let geneOne = cloneList[i] ? cloneList[i].clone[position] : "";
+        let geneTwo = cloneList[j] ? cloneList[j].clone[position] : "";
+        let badClone = false;
+
+        if (geneOne === geneTwo) {
+          if (geneOne === "g" || geneOne === "y") {
+            cloneList[i].clone.map((gene, index2) => {
+              if (gene === "w" || gene === "x") {
+                if (cloneList[j].clone[index2] === gene) {
+                  badClone = true;
+                }
+              }
+            });
+
+            if (!badClone) {
+              if (geneOne === "y") {
+                if (needY > 0) {
+                  potentialYClones.push({
+                    position: position,
+                    cloneInfo: cloneList[i],
+                  });
+                  potentialYClones.push({
+                    position: position,
+                    cloneInfo: cloneList[j],
+                  });
+                  let positionExists = (element) => element === position;
+                  let indexOfPosition =
+                    yPositionOfClones.findIndex(positionExists);
+                  if (indexOfPosition !== -1) {
+                    yPositionOfClones.splice(indexOfPosition, 1, position);
+                  } else {
+                    yPositionOfClones.push(position);
+                  }
+                }
+              }
+              if (geneOne === "g") {
+                if (needG > 0) {
+                  potentialGClones.push({
+                    position: position,
+                    cloneInfo: neededClones[i],
+                  });
+                  potentialGClones.push({
+                    position: position,
+                    cloneInfo: neededClones[j],
+                  });
+                  let positionExists = (element) => element === position;
+                  let indexOfPosition =
+                    gPositionOfClones.findIndex(positionExists);
+                  if (indexOfPosition !== -1) {
+                    gPositionOfClones.splice(indexOfPosition, 1, position);
+                  } else {
+                    gPositionOfClones.push(position);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-    cloneWithHighestRating.positionBadGenes.map((position, count) => {
-      if (count === 0) {
-        finalGClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalGClones[index + 1] !== undefined
-          ) {
-            if (finalGClones[index + 1][position] !== undefined) {
-              setC1step1(clone[position]);
-              setC2step1(finalGClones[index + 1][position]);
-            }
-          }
-        });
-      }
-    });
-    cloneWithHighestRating.positionBadGenes.map((position, count) => {
-      if (count === 0) {
-        finalYClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalYClones[index + 1] !== undefined
-          ) {
-            if (finalYClones[index + 1][position] !== undefined) {
-              setC1step1(clone[position]);
-              setC2step1(finalYClones[index + 1][position]);
-            }
-          }
-        });
-      }
-    });
-  }
-  function step2() {
-    if (!cloneWithHighestRating.positionBadGenes) {
-      return;
-    }
-    cloneWithHighestRating.positionBadGenes.map((position, count) => {
-      if (count === 1) {
-        finalGClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalGClones[index + 1] !== undefined
-          ) {
-            if (finalGClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalGClones[index + 1][position]);
-            }
-          }
-        });
-      }
-    });
-    cloneWithHighestRating.positionBadGenes.map((position, count) => {
-      if (count === 1) {
-        finalYClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalYClones[index + 1] !== undefined
-          ) {
-            if (finalYClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalYClones[index + 1][position]);
-            }
-          }
-        });
-      }
-    });
-  }
-  function step3() {
-    if (!cloneWithHighestRating.positionBadGenes) {
-      return;
-    }
-    cloneWithHighestRating.positionBadGenes.map((position, count) => {
-      if (count === 2) {
-        finalGClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalGClones[index + 1] !== undefined
-          ) {
-            if (finalGClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalGClones[index + 1][position]);
-            }
-          }
-        });
-      }
-    });
-    cloneWithHighestRating.positionBadGenes.map((position, count) => {
-      if (count === 2) {
-        finalYClones.map((clone, index) => {
-          if (
-            clone[position] !== undefined &&
-            finalYClones[index + 1] !== undefined
-          ) {
-            if (finalYClones[index + 1][position] !== undefined) {
-              setC1step2(clone[position]);
-              setC2step2(finalYClones[index + 1][position]);
-            }
-          }
-        });
-      }
-    });
   }
 
-  function addGenes(e) {
-    clone[e.target.id] = e.target.value;
-  }
+  /*   let stepIteration = 0;
+
+  yPositionOfClones.map((positionY) => {
+    gPositionOfClones.map((positionG, index) => {
+      if (positionY === positionG) {
+        if (yPositionOfClones.length === gPositionOfClones.length) {
+          let deletePosition = gPositionOfClones.indexOf(positionG);
+          gPositionOfClones.splice(deletePosition, 1, "");
+          return;
+        }
+        if (yPositionOfClones.length > gPositionOfClones.length) {
+          let deletePosition = yPositionOfClones.indexOf(positionY);
+          yPositionOfClones.splice(deletePosition, 1, "");
+          return;
+        }
+        if (yPositionOfClones.length < gPositionOfClones.length) {
+          let deletePosition = gPositionOfClones.indexOf(positionG);
+          gPositionOfClones.splice(deletePosition, 1, "");
+          return;
+        }
+      }
+    });
+  });
+
+  gPositionOfClones.map((positionNeeded, counter) => {
+    let crossbreedCloneStepbefore = "";
+
+    for (let i = 0; i < potentialGClones.length; i += 2) {
+      let lastIndexOfCrossbreedResults = crossbreedResults.length - 1;
+      let lastCBResult = "";
+      if (crossbreedResults[lastIndexOfCrossbreedResults]) {
+        lastCBResult = crossbreedResults[lastIndexOfCrossbreedResults];
+      }
+
+      if (lastCBResult === "") {
+        crossbreedCloneStepbefore = cloneWithHighestRating.clone.slice();
+      } else {
+        crossbreedCloneStepbefore = lastCBResult.clone.slice();
+      }
+      if (potentialGClones[i].position === positionNeeded) {
+        if (
+          potentialGClones[i] !== undefined &&
+          potentialGClones[i + 1] !== undefined
+        ) {
+          finalGClones.push({
+            [positionNeeded]: potentialGClones[i].cloneInfo.clone,
+          });
+          finalGClones.push({
+            [positionNeeded]: potentialGClones[i + 1].cloneInfo.clone,
+          });
+          if (lastCBResult !== "") {
+            if (lastCBResult.position !== positionNeeded) {
+              crossbreedResults.push({
+                position: positionNeeded,
+                clone: crossbreedCloneStepbefore,
+              });
+              crossbreedResults[stepIteration].clone.splice(
+                positionNeeded,
+                1,
+                potentialGClones[i].cloneInfo.clone[positionNeeded]
+              );
+              setcrossbreedR(crossbreedResults);
+              stepIteration++;
+            }
+          } else {
+            crossbreedResults.push({
+              position: positionNeeded,
+              clone: crossbreedCloneStepbefore,
+            });
+            crossbreedResults[stepIteration].clone.splice(
+              positionNeeded,
+              1,
+              potentialGClones[i].cloneInfo.clone[positionNeeded]
+            );
+            setcrossbreedR(crossbreedResults);
+            stepIteration++;
+          }
+        }
+      }
+    }
+  });
+  yPositionOfClones.map((positionNeeded, counter) => {
+    let crossbreedCloneStepbefore = "";
+
+    for (let i = 0; i < potentialYClones.length; i += 2) {
+      let lastIndexOfCrossbreedResults = crossbreedResults.length - 1;
+      let lastCBResult = "";
+      if (crossbreedResults[lastIndexOfCrossbreedResults]) {
+        lastCBResult = crossbreedResults[lastIndexOfCrossbreedResults];
+      }
+
+      if (lastCBResult === "") {
+        crossbreedCloneStepbefore = cloneWithHighestRating.clone.slice();
+      } else {
+        crossbreedCloneStepbefore = lastCBResult.clone.slice();
+      }
+      if (potentialYClones[i].position === positionNeeded) {
+        if (
+          potentialYClones[i] !== undefined &&
+          potentialYClones[i + 1] !== undefined
+        ) {
+          finalYClones.push({
+            [positionNeeded]: potentialYClones[i].cloneInfo.clone,
+          });
+          finalYClones.push({
+            [positionNeeded]: potentialYClones[i + 1].cloneInfo.clone,
+          });
+          if (lastCBResult) {
+            if (lastCBResult.position !== positionNeeded) {
+              crossbreedResults.push({
+                position: positionNeeded,
+                clone: crossbreedCloneStepbefore,
+              });
+              crossbreedResults[stepIteration].clone.splice(
+                positionNeeded,
+                1,
+                potentialYClones[i].cloneInfo.clone[positionNeeded]
+              );
+              setcrossbreedR(crossbreedResults);
+              stepIteration++;
+            }
+          } else {
+            crossbreedResults.push({
+              position: positionNeeded,
+              clone: crossbreedCloneStepbefore,
+            });
+            crossbreedResults[stepIteration].clone.splice(
+              positionNeeded,
+              1,
+              potentialYClones[i].cloneInfo.clone[positionNeeded]
+            );
+            setcrossbreedR(crossbreedResults);
+            stepIteration++;
+          }
+        }
+      }
+    }
+  }); */
+
+  console.log(commonGeneList);
+  console.log(singleCloneList);
+  console.log(geneWeightingList);
+  console.log(geneWeighting);
+  console.log(cloneWithHighestRating);
+  console.log(clonesWithMostCommonGenes);
+  console.log(commonPosition);
+  console.log(genes);
+  console.log(otherGenes);
+  console.log(weakGenesRating);
+  console.log(perfectHempSeedY);
+  console.log(perfectHempSeedG);
+  console.log(neededClones);
+  console.log(gPositionOfClones);
+  console.log(yPositionOfClones);
+
   function addClone() {
     genePool.push(clone.slice());
     const inputFields = document.querySelectorAll(".geneInput");
@@ -575,22 +419,169 @@ export default function Home() {
     });
 
     giveGeneWeighting();
-    findBestTwoClones();
-    findBestSingleClone();
+    findBestClone();
+    findUsableClones();
+    //findBestTwoClones();
+    //findBestSingleClone();
     findCrossbreadPair();
-    step1();
+    /*     step1();
     step2();
-    step3();
-    console.log(genePool);
-    console.log(neededClones);
-    console.log(cloneWithHighestRating);
+    step3(); */
+
+    function findBestTwoClones() {
+      let counter = 0;
+      let commonCounter = 0;
+      let highestAmount = 0;
+
+      for (let i = 0; i < genePool.length - 1; i++) {
+        for (let j = i; j < genePool.length - 1; j++) {
+          genePool[j + 1].map((x, index) => {
+            if (x === "y" || x === "g") {
+              if (x === genePool[i][index]) {
+                const clone1 = i;
+                const clone2 = parseFloat(j) + parseFloat(1);
+
+                commonPosition.push(index);
+                genes.push(x);
+                counter++;
+                commonCounter++;
+                commonGeneList[counter] = {
+                  commonGeneAmount: commonCounter,
+                  commonPositions: commonPosition,
+                  genes: genes,
+                  clone1: genePool[clone1],
+                  clone2: genePool[clone2],
+                };
+              }
+            }
+            if (index === 5) {
+              commonCounter = 0;
+              commonPosition = [];
+              genes = [];
+            }
+          });
+        }
+      }
+      commonGeneList.map((commons) => {
+        if (highestAmount < commons.commonGeneAmount) {
+          highestAmount = commons.commonGeneAmount;
+          clonesWithMostCommonGenes.push(commons);
+        }
+      });
+    }
+
+    function step1() {
+      if (!cloneWithHighestRating.positionBadGenes) {
+        return;
+      }
+      cloneWithHighestRating.positionBadGenes.map((position, count) => {
+        if (count === 0) {
+          finalGClones.map((clone, index) => {
+            if (
+              clone[position] !== undefined &&
+              finalGClones[index + 1] !== undefined
+            ) {
+              if (finalGClones[index + 1][position] !== undefined) {
+                setC1step1(clone[position]);
+                setC2step1(finalGClones[index + 1][position]);
+              }
+            }
+          });
+        }
+      });
+      cloneWithHighestRating.positionBadGenes.map((position, count) => {
+        if (count === 0) {
+          finalYClones.map((clone, index) => {
+            if (
+              clone[position] !== undefined &&
+              finalYClones[index + 1] !== undefined
+            ) {
+              if (finalYClones[index + 1][position] !== undefined) {
+                setC1step1(clone[position]);
+                setC2step1(finalYClones[index + 1][position]);
+              }
+            }
+          });
+        }
+      });
+    }
+    function step2() {
+      if (!cloneWithHighestRating.positionBadGenes) {
+        return;
+      }
+      cloneWithHighestRating.positionBadGenes.map((position, count) => {
+        if (count === 1) {
+          finalGClones.map((clone, index) => {
+            if (
+              clone[position] !== undefined &&
+              finalGClones[index + 1] !== undefined
+            ) {
+              if (finalGClones[index + 1][position] !== undefined) {
+                setC1step2(clone[position]);
+                setC2step2(finalGClones[index + 1][position]);
+              }
+            }
+          });
+        }
+      });
+      cloneWithHighestRating.positionBadGenes.map((position, count) => {
+        if (count === 1) {
+          finalYClones.map((clone, index) => {
+            if (
+              clone[position] !== undefined &&
+              finalYClones[index + 1] !== undefined
+            ) {
+              if (finalYClones[index + 1][position] !== undefined) {
+                setC1step2(clone[position]);
+                setC2step2(finalYClones[index + 1][position]);
+              }
+            }
+          });
+        }
+      });
+    }
+    function step3() {
+      if (!cloneWithHighestRating.positionBadGenes) {
+        return;
+      }
+      cloneWithHighestRating.positionBadGenes.map((position, count) => {
+        if (count === 2) {
+          finalGClones.map((clone, index) => {
+            if (
+              clone[position] !== undefined &&
+              finalGClones[index + 1] !== undefined
+            ) {
+              if (finalGClones[index + 1][position] !== undefined) {
+                setC1step2(clone[position]);
+                setC2step2(finalGClones[index + 1][position]);
+              }
+            }
+          });
+        }
+      });
+      cloneWithHighestRating.positionBadGenes.map((position, count) => {
+        if (count === 2) {
+          finalYClones.map((clone, index) => {
+            if (
+              clone[position] !== undefined &&
+              finalYClones[index + 1] !== undefined
+            ) {
+              if (finalYClones[index + 1][position] !== undefined) {
+                setC1step2(clone[position]);
+                setC2step2(finalYClones[index + 1][position]);
+              }
+            }
+          });
+        }
+      });
+    }
   }
 
   return (
     <div className={styles.container}>
       {giveGeneWeighting()}
       {findBestTwoClones()}
-      {findBestSingleClone()}
+      {findBestClone()}
 
       {findCrossbreadPair()}
       {step1()}
@@ -688,7 +679,7 @@ export default function Home() {
               : (e.target.value = "")
           }
         ></input>
-        <button onClick={addClone} formAction="/">
+        <button onClick={addClone()} formAction="/">
           Add Clone
         </button>
       </div>
