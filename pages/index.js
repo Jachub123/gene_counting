@@ -2,6 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import React, { useState } from "react";
+import cloneDeep from "lodash/cloneDeep";
 
 export default function Home() {
   const [C1step1, setC1step1] = useState("");
@@ -9,11 +10,11 @@ export default function Home() {
   const [C1step2, setC1step2] = useState("");
   const [C2step2, setC2step2] = useState("");
   const [crossbreedR, setcrossbreedR] = useState([]);
-  const [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
+  let [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
 
   let genePool = [];
   let commonGeneList = [];
-  let singleCloneList = [];
+  let cloneList = [];
   let geneWeightingList = [];
   let geneWeighting = [];
   let clonesWithMostCommonGenes = [];
@@ -26,13 +27,16 @@ export default function Home() {
   let neededClones = [];
   let potentialGClones = [];
   let potentialYClones = [];
+  let usableGeneList_g = [];
+  let usableGeneList_y = [];
   let finalGClones = [];
   let finalYClones = [];
   let crossbreedResults = [];
   let gPositionOfClones = [];
   let yPositionOfClones = [];
-
+  let highestRating = 0;
   let clone = [];
+  let copy = [];
 
   function addGenes() {
     for (let i = 0; i < 6; i++) {
@@ -55,21 +59,140 @@ export default function Home() {
   }
 
   function addClone() {
-    if (!clone || clone.length < 6) {
+    if (!clone) {
       return;
     }
-    console.log("clone");
-    console.log(clone.length);
-    console.log(clone);
     genePool.push(clone.slice());
     const inputFields = document.querySelectorAll(".geneInput");
     inputFields.forEach((input) => {
       input.value = "";
     });
+
+    clone = [];
+    giveGeneWeighting();
+    rateClone();
+    findBestClone();
+    findUsableClones();
+  }
+
+  function giveGeneWeighting() {
+    for (let i = 0; i < genePool.length; i++) {
+      genePool[i].map((gene, index) => {
+        if (gene === "w" || gene === "x") {
+          geneWeighting.push(0.9);
+        } else {
+          geneWeighting.push(0.5);
+        }
+        if (index === 5) {
+          geneWeightingList[i] = geneWeighting;
+          geneWeighting = [];
+        }
+      });
+    }
+  }
+
+  function rateClone() {
+    let geneCounterY = 0;
+    let geneCounterG = 0;
+    let weakGenes = [];
+    let positionBadGenes = [];
+
+    for (let i = 0; i < genePool.length; i++) {
+      genePool[i].map((gene, index) => {
+        if (gene === "y") {
+          if (geneCounterY < perfectHempSeedY) {
+            geneCounterY++;
+            weakGenesRating = weakGenesRating + 1;
+          } else {
+            weakGenesRating = weakGenesRating + 0.6;
+          }
+        } else if (gene === "g") {
+          if (geneCounterG < perfectHempSeedG) {
+            geneCounterG++;
+            weakGenesRating = weakGenesRating + 1;
+          } else {
+            weakGenesRating = weakGenesRating + 0.6;
+          }
+        } else {
+          if (gene === "h") {
+            weakGenesRating = weakGenesRating + 0.5;
+          }
+          weakGenes.push(gene);
+          positionBadGenes.push(index);
+        }
+        if (index === 5) {
+          otherGenes[i] = weakGenes;
+          weakGenes = [];
+          cloneList[i] = {
+            clone: genePool[i],
+            cloneWeighting: geneWeightingList[i],
+            y: geneCounterY,
+            g: geneCounterG,
+            badGenes: otherGenes[i],
+            positionBadGenes: positionBadGenes,
+            rating: parseFloat(weakGenesRating).toFixed(2),
+          };
+          weakGenesRating = 0;
+          geneCounterY = 0;
+          geneCounterG = 0;
+          positionBadGenes = [];
+        }
+      });
+    }
     console.log("genePool");
     console.log(genePool);
-    clone = [];
+    console.log("cloneList");
+    console.log(cloneList);
+    console.log("cloneWithHighestRating");
+    console.log(cloneWithHighestRating);
+    console.log(usableGeneList_g);
+    console.log(usableGeneList_y);
   }
+  function findBestClone() {
+    cloneList.map((clones) => {
+      if (highestRating < clones.rating) {
+        highestRating = clones.rating;
+        cloneWithHighestRating = clones;
+      }
+    });
+  }
+
+  function findUsableClones() {
+    //how many G or Y Genes does the best Clone need
+    let needG = perfectHempSeedG - cloneWithHighestRating.g;
+    let needY = perfectHempSeedY - cloneWithHighestRating.y;
+    let iteration = "";
+    let stepIteration = 0;
+
+    //If it needs both G and Y Genes it loops through the bad positions of the cloneWithHighestRating(CWHR)
+    //for each bad gene Position of the CWHR it searches the "genePool" for g or y genes at the same position
+
+    if (needG > 0) {
+      for (let i = 0; i < genePool.length; i++) {
+        cloneWithHighestRating.positionBadGenes.map((position) => {
+          if (genePool[i][position] === "g") {
+            usableGeneList_g.push({
+              position: position,
+              clone: cloneList[i],
+            });
+          }
+        });
+      }
+    }
+    if (needY > 0) {
+      for (let i = 0; i < genePool.length; i++) {
+        cloneWithHighestRating.positionBadGenes.map((position) => {
+          if (genePool[i][position] === "y") {
+            usableGeneList_y.push({
+              position: position,
+              clone: cloneList[i],
+            });
+          }
+        });
+      }
+    }
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -163,7 +286,7 @@ export default function Home() {
               : (e.target.value = "")
           }
         ></input>
-        <button onClick={addClone} formAction="/">
+        <button onClick={addClone} formAction="">
           Add Clone
         </button>
       </div>
