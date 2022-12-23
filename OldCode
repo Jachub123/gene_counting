@@ -90,41 +90,7 @@ export default function Home() {
 
 
 
-    function findUsableClones() {
-      //how many G or Y Genes does the best Clone need
-      let needG = perfectHempSeedG - cloneWithHighestRating.g;
-      let needY = perfectHempSeedY - cloneWithHighestRating.y;
-      let iteration = "";
-      let stepIteration = 0;
 
-      //If it needs both G and Y Genes it loops through the bad positions of the cloneWithHighestRating(CWHR)
-      //for each bad gene Position of the CWHR it searches the "genePool" for g or y genes at the same position
-
-      if (needG > 0) {
-        for (let i = 0; i < genePool.length; i++) {
-          cloneWithHighestRating.positionBadGenes.map((position) => {
-            if (genePool[i][position] === "g") {
-              usableGeneList_g.push({
-                position: position,
-                clone: singleCloneList[i],
-              });
-            }
-          });
-        }
-      }
-      if (needY > 0) {
-        for (let i = 0; i < genePool.length; i++) {
-          cloneWithHighestRating.positionBadGenes.map((position) => {
-            if (genePool[i][position] === "y") {
-              usableGeneList_y.push({
-                position: position,
-                clone: singleCloneList[i],
-              });
-            }
-          });
-        }
-      }
-    }
 
     function findCrossbreadPair(cloneList) {
       if (!cloneList) {
