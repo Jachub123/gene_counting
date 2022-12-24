@@ -37,7 +37,7 @@ export default function Home() {
   let highestRating = 0;
   let clone = [];
   let copy = [];
-  let positionsToChangeToG = [];
+  let positionsToChangeToG = "";
 
   function addGenes() {
     for (let i = 0; i < 6; i++) {
@@ -189,53 +189,65 @@ yyygyg */
       //Braucht der Clone G Gene?
 
       if (needY < 0) {
-        //falls der Clone zu viele, also mehr als 4 Y Gene hat, dann hat er keine schlechten Gene an diesen Positionen. Dann muss für jedes benötigte G-Gen irgend ein Y-Gen ersetzt werden.
+        //falls der Clone zu viele, also mehr als 4, Y Gene hat, dann hat er keine schlechten Gene an diesen Positionen. Dann muss für jedes benötigte G-Gen ein beliebiges Y-Gen ersetzt werden.
         needY = needY * -1; //negativ wird positiv
 
         for (let i = 0; i < cloneWithHighestRating.clone.length; i++) {
-          //jedes CWHR Gen wird durchsucht
+          //jedes CWHR-Gen wird durchsucht
           if (needY === 0) {
             return;
           }
           if (cloneWithHighestRating.clone[i] === "y") {
             //wenn es ein y ist
             let cloneListCopy = cloneDeep(cloneList);
-            cloneList.map((clone, index) => {
-              if (clone.clone[i] === "g") {
+            let cloneAbleGPositions = [];
+
+            cloneList.map((firstClone, index) => {
+              if (firstClone.clone[i] === "g") {
                 // wird die CloneList nach einem G-Gen an dieser Position durchsucht
+                cloneListCopy.splice(index, 1);
+                positionsToChangeToG = i; // wenn gefunden, wird die Position gespeichert der gefunde Clone wird aus der Liste entfernt
+
+                //in neuer Liste wird nach weiterem G-Gen gesucht an selber Position.
                 console.log("cloneListCopy");
                 console.log(cloneListCopy);
-                console.log("cloneList");
-                console.log(cloneList);
-                cloneListCopy.splice(index, 1);
-                positionsToChangeToG.push(i); // wenn gefunden, wird die Position gespeichert
-                console.log(positionsToChangeToG);
-                positionsToChangeToG.map((position) => {
-                  //ein weiteres G-Gen muss dann an der Position bei einem anderen Clone der CloneList gefunden werden.
-                  cloneListCopy.map((clone) => {
-                    if (clone[position] === "g") {
-                      console.log("zweiter Clone gefunden!");
+                cloneListCopy.map((secondClone) => {
+                  if (secondClone.clone[positionsToChangeToG] === "g") {
+                    //Wenn gefunden, werden beide Clone gespeichert und deren gemeinsame G-Position. Abfrage ob diese gemeinsame rote Gene haben fehlt!
+                    needY = needY - 1;
+                    cloneAbleGPositions.push({
+                      clone1: firstClone,
+                      clone2: secondClone,
+                      position: positionsToChangeToG,
+                    });
+                    positionsToChangeToG = "";
+                    return;
+                  } else {
+                    if (
+                      cloneListCopy[cloneListCopy.length - 1] !== firstClone
+                    ) {
+                      //Wenn kein zweiter Clone gefunden wurde wird der entfernte Clone der Liste wieder hinzugefügt.
+                      cloneListCopy.push(firstClone);
                     }
-                  });
+                  }
                 });
-                positionsToChangeToG = [];
-                needY = needY - 1;
+
+                console.log(cloneAbleGPositions);
               }
             });
           }
         }
       }
-      if (needG > 0) {
-        for (let i = 0; i < genePool.length; i++) {
-          cloneWithHighestRating.positionBadGenes.map((position) => {
-            if (genePool[i][position] === "g") {
-              usableGeneList_g.push({
-                position: position,
-                clone: cloneList[i],
-              });
-            }
-          });
-        }
+
+      for (let i = 0; i < genePool.length; i++) {
+        cloneWithHighestRating.positionBadGenes.map((position) => {
+          if (genePool[i][position] === "g") {
+            usableGeneList_g.push({
+              position: position,
+              clone: cloneList[i],
+            });
+          }
+        });
       }
     }
     if (needY > 0 || needG < 0) {
