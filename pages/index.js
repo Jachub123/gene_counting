@@ -38,17 +38,47 @@ export default function Home() {
   let clone = [];
   let copy = [];
   let positionsToChangeToG = "";
+  let cloneListCopy = undefined;
+
+  // Warn if overriding existing method
+  if (Array.prototype.equals)
+    console.warn(
+      "Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code."
+    );
+  // attach the .equals method to Array's prototype to call it on any array
+  Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array) return false;
+    // if the argument is the same array, we can be sure the contents are same as well
+    if (array === this) return true;
+    // compare lengths - can save a lot of time
+    if (this.length != array.length) return false;
+
+    for (var i = 0, l = this.length; i < l; i++) {
+      // Check if we have nested arrays
+      if (this[i] instanceof Array && array[i] instanceof Array) {
+        // recurse into the nested arrays
+        if (!this[i].equals(array[i])) return false;
+      } else if (this[i] != array[i]) {
+        // Warning - two different object instances will never be equal: {x:20} != {x:20}
+        return false;
+      }
+    }
+    return true;
+  };
+  // Hide method from for-in loops
+  Object.defineProperty(Array.prototype, "equals", { enumerable: false });
 
   function addGenes() {
     for (let i = 0; i < 6; i++) {
       if (clone) {
         clone[i] = document.getElementById(i).value;
-        if (document.getElementById(i).value === "") {
+        if (clone[i] === "") {
           clone = false;
           return;
         }
       } else {
-        if (document.getElementById(i).value !== "") {
+        if (clone[i] !== "") {
           clone = [];
           clone[i] = document.getElementById(i).value;
         } else {
@@ -60,6 +90,7 @@ export default function Home() {
   }
 
   function addClone() {
+    addGenes();
     if (!clone) {
       return;
     }
@@ -142,14 +173,6 @@ export default function Home() {
         }
       });
     }
-    console.log("genePool");
-    console.log(genePool);
-    console.log("cloneList");
-    console.log(cloneList);
-    console.log("cloneWithHighestRating");
-    console.log(cloneWithHighestRating);
-    console.log(usableGeneList_g);
-    console.log(usableGeneList_y);
   }
   function findBestClone() {
     cloneList.map((clones) => {
@@ -158,6 +181,16 @@ export default function Home() {
         cloneWithHighestRating = clones;
       }
     });
+    console.log("genePool");
+    console.log(genePool);
+    console.log("cloneList");
+    console.log(cloneList);
+    console.log("cloneWithHighestRating");
+    console.log(cloneWithHighestRating);
+    console.log("usableGeneList_g");
+    console.log(usableGeneList_g);
+    console.log("usableGeneList_y");
+    console.log(usableGeneList_y);
   }
 
   function findUsableClones() {
@@ -232,6 +265,7 @@ yyygyg */
                   }
                 });
 
+                console.log("cloneAbleGPositions");
                 console.log(cloneAbleGPositions);
               }
             });
@@ -250,16 +284,47 @@ yyygyg */
         });
       }
     }
-    if (needY > 0 || needG < 0) {
-      for (let i = 0; i < genePool.length; i++) {
-        cloneWithHighestRating.positionBadGenes.map((position) => {
-          if (genePool[i][position] === "y") {
+    if (needY > 0) {
+      cloneListCopy = cloneDeep(cloneList); //create deep copies here to later maipulate their values without touching the originals.
+      for (let i = 0; i < usableGeneList_y.length; i++) {
+        for (let j = 0; j < cloneListCopy.length; j++) {
+          if (usableGeneList_y[i].clone.clone.equals(cloneListCopy[j].clone)) {
+            cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
+          } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
+        } //because the copy of the original will reinclude them every time we add a new Clone.
+      } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
+
+      let badGenePositionsCopy = cloneDeep(
+        cloneWithHighestRating.positionBadGenes
+      );
+      for (let j = 0; j < cloneWithHighestRating.positionBadGenes.length; j++) {
+        let currentBadGenePosition = badGenePositionsCopy[0];
+        badGenePositionsCopy.splice(0, 1); //throw current bad Gene Position out of the copy of the array,
+        for (let i = 0; i < cloneListCopy.length; i++) {
+          let currentGene = cloneListCopy[i].clone[currentBadGenePosition];
+          if (currentGene === "y") {
+            //so in case of a match of the y gene on the position we need
             usableGeneList_y.push({
-              position: position,
-              clone: cloneList[i],
+              position: currentBadGenePosition,
+              clone: cloneListCopy[i],
             });
+
+            if (badGenePositionsCopy.length > 0) {
+              //we can search the same clone for other possible matches with the remaining bad Positions of the copy
+              if (needY > 1) {
+                badGenePositionsCopy.map((otherBadGenePosition) => {
+                  if (cloneListCopy[i].clone[otherBadGenePosition] === "y") {
+                    usableGeneList_y.push({
+                      position: otherBadGenePosition,
+                      clone: cloneListCopy[i],
+                    });
+                  }
+                });
+              }
+            }
+            cloneListCopy.splice(i, 1);
           }
-        });
+        }
       }
     }
   }
