@@ -37,9 +37,12 @@ export default function Home() {
   let highestRating = 0;
   let clone = [];
   let copy = [];
-  let positionsToChangeToG = "";
+  let positionsToChange = "";
   let cloneListCopy = undefined;
-
+  let findClonesForCrossbreedingG = [];
+  let findClonesForCrossbreedingY = [];
+  let needG = 0;
+  let needY = 0;
   // Warn if overriding existing method
   if (Array.prototype.equals)
     console.warn(
@@ -104,7 +107,10 @@ export default function Home() {
     giveGeneWeighting();
     rateClone();
     findBestClone();
-    findUsableClones();
+    findUsableClones(needG, "g");
+    findUsableClones(needY, "y");
+    findClonesForCrossbreeding(usableGeneList_g);
+    findClonesForCrossbreeding(usableGeneList_y);
   }
 
   function giveGeneWeighting() {
@@ -181,6 +187,8 @@ export default function Home() {
         cloneWithHighestRating = clones;
       }
     });
+    needG = perfectHempSeedG - cloneWithHighestRating.g;
+    needY = perfectHempSeedY - cloneWithHighestRating.y;
     console.log("genePool");
     console.log(genePool);
     console.log("cloneList");
@@ -193,137 +201,131 @@ export default function Home() {
     console.log(usableGeneList_y);
   }
 
-  function findUsableClones() {
+  function findUsableClones(geneCount, gene) {
     //how many G or Y Genes does the best Clone need
-    let needG = perfectHempSeedG - cloneWithHighestRating.g;
-    let needY = perfectHempSeedY - cloneWithHighestRating.y;
-    let iteration = "";
-    let stepIteration = 0;
-
     //If it needs both G and Y Genes it loops through the bad positions of the cloneWithHighestRating(CWHR)
     //for each bad gene Position of the CWHR it searches the "genePool" for g or y genes at the same position
-    /* yyyygg
-yyyggy
-yyggyy
-yggyyy
-ggyyyy
-gyyyyg
-gyyygy
-gyygyy
-gygyyy
-ygygyy
-ygyygy
-ygyyyg
-yygygy
-yygyyg
-yyygyg */
 
-    if (needG > 0) {
-      //Braucht der Clone G Gene?
+    //Braucht der Clone G Gene?
+    if (gene == "y") {
+      usableGeneList(usableGeneList_y);
+    } else {
+      usableGeneList(usableGeneList_g);
+    }
 
-      if (needY < 0) {
-        //falls der Clone zu viele, also mehr als 4, Y Gene hat, dann hat er keine schlechten Gene an diesen Positionen. Dann muss für jedes benötigte G-Gen ein beliebiges Y-Gen ersetzt werden.
-        needY = needY * -1; //negativ wird positiv
+    function usableGeneList(list) {
+      if (geneCount > 0) {
+        cloneListCopy = cloneDeep(cloneList); //create deep copies here to later maipulate their values without touching the originals.
+        for (let i = 0; i < list.length; i++) {
+          for (let j = 0; j < cloneListCopy.length; j++) {
+            if (list[i].clone.clone.equals(cloneListCopy[j].clone)) {
+              cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
+            } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
+          } //because the copy of the original will reinclude them every time we add a new Clone.
+        } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
+
+        let badGenePositionsCopy = cloneDeep(cloneWithHighestRating.positionBadGenes);
+        for (let j = 0; j < cloneWithHighestRating.positionBadGenes.length; j++) {
+          let currentBadGenePosition = badGenePositionsCopy[0];
+          badGenePositionsCopy.splice(0, 1); //throw current bad Gene Position out of the copy of the array,
+          for (let i = 0; i < cloneListCopy.length; i++) {
+            let currentGene = cloneListCopy[i].clone[currentBadGenePosition];
+            if (currentGene === gene) {
+              //so in case of a match of the y gene on the position we need
+              list.push({
+                position: currentBadGenePosition,
+                clone: cloneListCopy[i],
+              });
+
+              if (badGenePositionsCopy.length > 0) {
+                //we can search the same clone for other possible matches with the remaining bad Positions of the copy
+                if (needY > 1) {
+                  badGenePositionsCopy.map((otherBadGenePosition) => {
+                    if (cloneListCopy[i].clone[otherBadGenePosition] === gene) {
+                      list.push({
+                        position: otherBadGenePosition,
+                        clone: cloneListCopy[i],
+                      });
+                    }
+                  });
+                }
+              }
+              cloneListCopy.splice(i, 1);
+            }
+          }
+        }
+      }
+      if (geneCount < 0) {
+        //falls der Clone zu viele, also mehr als 4, Y/G Gene hat, dann hat er keine schlechten Gene an diesen Positionen. Dann muss für jedes benötigte G-Gen ein beliebiges Y-Gen ersetzt werden.
+        geneCount = geneCount * -1; //negativ wird positiv
 
         for (let i = 0; i < cloneWithHighestRating.clone.length; i++) {
+          console.log(cloneWithHighestRating.clone[i]);
           //jedes CWHR-Gen wird durchsucht
-          if (needY === 0) {
+          if (geneCount === 0) {
             return;
           }
-          if (cloneWithHighestRating.clone[i] === "y") {
-            //wenn es ein y ist
+          if (cloneWithHighestRating.clone[i] === gene) {
+            //An jeder Stelle an der es das entsprechende Gen hat ist ein potentieller Austausch mit anderen Clonen möglich.
             let cloneListCopy = cloneDeep(cloneList);
             let cloneAbleGPositions = [];
+            for (let j = 0; j < list.length; j++) {
+              for (let k = 0; k < cloneListCopy.length; k++) {
+                if (list[j].clone.clone.equals(cloneListCopy[k].clone)) {
+                  cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
+                } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
+              } //because the copy of the original will reinclude them every time we add a new Clone.
+            } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
 
-            cloneList.map((firstClone, index) => {
-              if (firstClone.clone[i] === "g") {
+            for (let l = 0; l < cloneListCopy.length; l++) {
+              if (cloneListCopy[i].clone[i] === gene) {
                 // wird die CloneList nach einem G-Gen an dieser Position durchsucht
-                cloneListCopy.splice(index, 1);
-                positionsToChangeToG = i; // wenn gefunden, wird die Position gespeichert der gefunde Clone wird aus der Liste entfernt
+                positionsToChange = i; // wenn gefunden, wird die Position gespeichert der gefunde Clone wird aus der Liste entfernt
 
                 //in neuer Liste wird nach weiterem G-Gen gesucht an selber Position.
-                console.log("cloneListCopy");
-                console.log(cloneListCopy);
-                cloneListCopy.map((secondClone) => {
-                  if (secondClone.clone[positionsToChangeToG] === "g") {
+                for (let j = 1; j <= cloneListCopy.length; j++) {
+                  if (cloneListCopy[j].clone[positionsToChange] === gene) {
                     //Wenn gefunden, werden beide Clone gespeichert und deren gemeinsame G-Position. Abfrage ob diese gemeinsame rote Gene haben fehlt!
-                    needY = needY - 1;
-                    cloneAbleGPositions.push({
+                    geneCount = geneCount - 1;
+                    /*                  list.push({
+                      position: otherBadGenePosition,
+                      clone: cloneListCopy[i],
+                    });
+                    list.push({
                       clone1: firstClone,
                       clone2: secondClone,
-                      position: positionsToChangeToG,
-                    });
-                    positionsToChangeToG = "";
+                      position: positionsToChange,
+                    }); */
+                    positionsToChange = "";
+                    /*                     cloneListCopy.splice(index, 1);
+                    cloneListCopy.splice(index, 1); */
                     return;
                   } else {
-                    if (
-                      cloneListCopy[cloneListCopy.length - 1] !== firstClone
-                    ) {
+                    if (cloneListCopy[cloneListCopy.length - 1] !== firstClone) {
                       //Wenn kein zweiter Clone gefunden wurde wird der entfernte Clone der Liste wieder hinzugefügt.
                       cloneListCopy.push(firstClone);
                     }
                   }
-                });
+                }
 
                 console.log("cloneAbleGPositions");
                 console.log(cloneAbleGPositions);
               }
-            });
+            }
           }
         }
       }
-
-      for (let i = 0; i < genePool.length; i++) {
-        cloneWithHighestRating.positionBadGenes.map((position) => {
-          if (genePool[i][position] === "g") {
-            usableGeneList_g.push({
-              position: position,
-              clone: cloneList[i],
-            });
-          }
-        });
-      }
     }
-    if (needY > 0) {
-      cloneListCopy = cloneDeep(cloneList); //create deep copies here to later maipulate their values without touching the originals.
-      for (let i = 0; i < usableGeneList_y.length; i++) {
-        for (let j = 0; j < cloneListCopy.length; j++) {
-          if (usableGeneList_y[i].clone.clone.equals(cloneListCopy[j].clone)) {
-            cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
-          } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
-        } //because the copy of the original will reinclude them every time we add a new Clone.
-      } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
+  }
 
-      let badGenePositionsCopy = cloneDeep(
-        cloneWithHighestRating.positionBadGenes
-      );
-      for (let j = 0; j < cloneWithHighestRating.positionBadGenes.length; j++) {
-        let currentBadGenePosition = badGenePositionsCopy[0];
-        badGenePositionsCopy.splice(0, 1); //throw current bad Gene Position out of the copy of the array,
-        for (let i = 0; i < cloneListCopy.length; i++) {
-          let currentGene = cloneListCopy[i].clone[currentBadGenePosition];
-          if (currentGene === "y") {
-            //so in case of a match of the y gene on the position we need
-            usableGeneList_y.push({
-              position: currentBadGenePosition,
-              clone: cloneListCopy[i],
-            });
-
-            if (badGenePositionsCopy.length > 0) {
-              //we can search the same clone for other possible matches with the remaining bad Positions of the copy
-              if (needY > 1) {
-                badGenePositionsCopy.map((otherBadGenePosition) => {
-                  if (cloneListCopy[i].clone[otherBadGenePosition] === "y") {
-                    usableGeneList_y.push({
-                      position: otherBadGenePosition,
-                      clone: cloneListCopy[i],
-                    });
-                  }
-                });
-              }
-            }
-            cloneListCopy.splice(i, 1);
-          }
+  function findClonesForCrossbreeding(list) {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = 1; j <= list.length; j++) {
+        let gen1 = list[i];
+        let gen2 = list[j];
+        if (gen1 == gen2) {
+          console.log(gen1);
+          console.log(gen2);
         }
       }
     }
