@@ -14,7 +14,6 @@ export default function Home() {
 
   let genePool = [];
   let commonGeneList = [];
-  let cloneList = [];
   let geneWeightingList = [];
   let geneWeighting = [];
   let clonesWithMostCommonGenes = [];
@@ -39,10 +38,16 @@ export default function Home() {
   let copy = [];
   let positionsToChange = "";
   let cloneListCopy = undefined;
-  let findClonesForCrossbreedingG = [];
-  let findClonesForCrossbreedingY = [];
+  let findClonesForCrossbreedingR1G = [];
+  let findClonesForCrossbreedingR1Y = [];
   let needG = 0;
   let needY = 0;
+  let usablePositionExists;
+  let foundGene = false;
+  let bestRating = 0;
+  let crossbreedWeighting = [];
+  let needR2 = false;
+
   // Warn if overriding existing method
   if (Array.prototype.equals)
     console.warn(
@@ -93,6 +98,8 @@ export default function Home() {
   }
 
   function addClone() {
+    let cloneList = [];
+
     addGenes();
     if (!clone) {
       return;
@@ -104,40 +111,40 @@ export default function Home() {
     });
 
     clone = [];
-    giveGeneWeighting();
-    rateClone();
-    findBestClone();
-    findUsableClones(needG, "g");
-    findUsableClones(needY, "y");
-    findClonesForCrossbreeding(usableGeneList_g);
-    findClonesForCrossbreeding(usableGeneList_y);
+    giveGeneWeighting(genePool, geneWeightingList);
+    rateClone(genePool, cloneList, geneWeightingList);
+    findBestClone(cloneList);
+    findUsableClones(needG, "g", cloneList);
+    findUsableClones(needY, "y", cloneList);
+    findClonesForCrossbreedingR1(usableGeneList_g);
+    findClonesForCrossbreedingR1(usableGeneList_y);
   }
 
-  function giveGeneWeighting() {
-    for (let i = 0; i < genePool.length; i++) {
-      genePool[i].map((gene, index) => {
-        if (gene === "w" || gene === "x") {
+  function giveGeneWeighting(geneArr, list) {
+    for (let i = 0; i < geneArr.length; i++) {
+      geneArr[i].map((gene, index) => {
+        if (gene.includes("w") || gene.includes("x")) {
           geneWeighting.push(0.9);
         } else {
           geneWeighting.push(0.5);
         }
         if (index === 5) {
-          geneWeightingList[i] = geneWeighting;
+          list[i] = geneWeighting;
           geneWeighting = [];
         }
       });
     }
   }
 
-  function rateClone() {
+  function rateClone(geneArr, list, weighting) {
     let geneCounterY = 0;
     let geneCounterG = 0;
     let weakGenes = [];
     let positionBadGenes = [];
 
-    for (let i = 0; i < genePool.length; i++) {
-      genePool[i].map((gene, index) => {
-        if (gene === "y") {
+    for (let i = 0; i < geneArr.length; i++) {
+      geneArr[i].map((gene, index) => {
+        if (gene.includes("y")) {
           if (geneCounterY < perfectHempSeedY) {
             geneCounterY++;
             weakGenesRating = weakGenesRating + 1;
@@ -145,7 +152,7 @@ export default function Home() {
             geneCounterY++;
             weakGenesRating = weakGenesRating + 0.6;
           }
-        } else if (gene === "g") {
+        } else if (gene.includes("g")) {
           if (geneCounterG < perfectHempSeedG) {
             geneCounterG++;
             weakGenesRating = weakGenesRating + 1;
@@ -154,7 +161,7 @@ export default function Home() {
             weakGenesRating = weakGenesRating + 0.6;
           }
         } else {
-          if (gene === "h") {
+          if (gene.includes("h")) {
             weakGenesRating = weakGenesRating + 0.5;
           }
           weakGenes.push(gene);
@@ -163,15 +170,15 @@ export default function Home() {
         if (index === 5) {
           otherGenes[i] = weakGenes;
           weakGenes = [];
-          cloneList[i] = {
-            clone: genePool[i],
-            cloneWeighting: geneWeightingList[i],
+          list.push({
+            clone: geneArr[i],
+            cloneWeighting: weighting[i],
             y: geneCounterY,
             g: geneCounterG,
             badGenes: otherGenes[i],
             positionBadGenes: positionBadGenes,
-            rating: parseFloat(weakGenesRating).toFixed(2),
-          };
+            rating: Number(parseFloat(weakGenesRating).toFixed(2)),
+          });
           weakGenesRating = 0;
           geneCounterY = 0;
           geneCounterG = 0;
@@ -180,11 +187,14 @@ export default function Home() {
       });
     }
   }
-  function findBestClone() {
-    cloneList.map((clones) => {
+
+  function findBestClone(list) {
+    list.map((clones) => {
       if (highestRating < clones.rating) {
         highestRating = clones.rating;
         cloneWithHighestRating = clones;
+        usableGeneList_g = [];
+        usableGeneList_y = [];
       }
     });
     needG = perfectHempSeedG - cloneWithHighestRating.g;
@@ -192,7 +202,7 @@ export default function Home() {
     console.log("genePool");
     console.log(genePool);
     console.log("cloneList");
-    console.log(cloneList);
+    console.log(list);
     console.log("cloneWithHighestRating");
     console.log(cloneWithHighestRating);
     console.log("usableGeneList_g");
@@ -201,56 +211,43 @@ export default function Home() {
     console.log(usableGeneList_y);
   }
 
-  function findUsableClones(geneCount, gene) {
+  function findUsableClones(geneCount, gene, list) {
     //how many G or Y Genes does the best Clone need
     //If it needs both G and Y Genes it loops through the bad positions of the cloneWithHighestRating(CWHR)
     //for each bad gene Position of the CWHR it searches the "genePool" for g or y genes at the same position
 
     //Braucht der Clone G Gene?
-    if (gene == "y") {
-      usableGeneList(usableGeneList_y);
+    if (gene === "y") {
+      usableGeneList(usableGeneList_y, list);
     } else {
-      usableGeneList(usableGeneList_g);
+      usableGeneList(usableGeneList_g, list);
     }
 
-    function usableGeneList(list) {
+    function usableGeneList(usableList, list) {
       if (geneCount > 0) {
-        cloneListCopy = cloneDeep(cloneList); //create deep copies here to later maipulate their values without touching the originals.
-        for (let i = 0; i < list.length; i++) {
+        cloneListCopy = cloneDeep(list); //create deep copies here to later maipulate their values without touching the originals.
+        for (let i = 0; i < usableList.length; i++) {
           for (let j = 0; j < cloneListCopy.length; j++) {
-            if (list[i].clone.clone.equals(cloneListCopy[j].clone)) {
+            if (usableList[i].clone.clone.equals(cloneListCopy[j].clone)) {
               cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
             } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
           } //because the copy of the original will reinclude them every time we add a new Clone.
         } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
 
-        let badGenePositionsCopy = cloneDeep(cloneWithHighestRating.positionBadGenes);
         for (let j = 0; j < cloneWithHighestRating.positionBadGenes.length; j++) {
-          let currentBadGenePosition = badGenePositionsCopy[0];
-          badGenePositionsCopy.splice(0, 1); //throw current bad Gene Position out of the copy of the array,
+          let currentBadGenePosition = cloneWithHighestRating.positionBadGenes[j];
+
           for (let i = 0; i < cloneListCopy.length; i++) {
             let currentGene = cloneListCopy[i].clone[currentBadGenePosition];
             if (currentGene === gene) {
-              //so in case of a match of the y gene on the position we need
-              list.push({
+              //so in case of a match of the gene on the position we need
+              usableList.push({
                 position: currentBadGenePosition,
                 clone: cloneListCopy[i],
               });
-
-              if (badGenePositionsCopy.length > 0) {
-                //we can search the same clone for other possible matches with the remaining bad Positions of the copy
-                if (needY > 1) {
-                  badGenePositionsCopy.map((otherBadGenePosition) => {
-                    if (cloneListCopy[i].clone[otherBadGenePosition] === gene) {
-                      list.push({
-                        position: otherBadGenePosition,
-                        clone: cloneListCopy[i],
-                      });
-                    }
-                  });
-                }
+              if (i === 5) {
+                cloneListCopy.splice(i, 1);
               }
-              cloneListCopy.splice(i, 1);
             }
           }
         }
@@ -258,59 +255,47 @@ export default function Home() {
       if (geneCount < 0) {
         //falls der Clone zu viele, also mehr als 4, Y/G Gene hat, dann hat er keine schlechten Gene an diesen Positionen. Dann muss für jedes benötigte G-Gen ein beliebiges Y-Gen ersetzt werden.
         geneCount = geneCount * -1; //negativ wird positiv
+        let searchedGene = "";
+        let cloneListCopy = cloneDeep(list);
 
-        for (let i = 0; i < cloneWithHighestRating.clone.length; i++) {
-          console.log(cloneWithHighestRating.clone[i]);
+        if (gene === "y") {
+          searchedGene = "g";
+        } else {
+          searchedGene = "y";
+        }
+
+        for (let j = 0; j < usableList.length; j++) {
+          for (let k = 0; k < cloneListCopy.length; k++) {
+            if (usableList[j].clone.clone.equals(cloneListCopy[k].clone)) {
+              cloneListCopy.splice(k, 1); //if there has been a previous Call of this function (by adding a new Clone)
+            } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
+          } //because the copy of the original will reinclude them every time we add a new Clone.
+        } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
+
+        for (let i = cloneListCopy.length - 1; i >= 0; i--) {
           //jedes CWHR-Gen wird durchsucht
-          if (geneCount === 0) {
-            return;
-          }
-          if (cloneWithHighestRating.clone[i] === gene) {
-            //An jeder Stelle an der es das entsprechende Gen hat ist ein potentieller Austausch mit anderen Clonen möglich.
-            let cloneListCopy = cloneDeep(cloneList);
-            let cloneAbleGPositions = [];
-            for (let j = 0; j < list.length; j++) {
-              for (let k = 0; k < cloneListCopy.length; k++) {
-                if (list[j].clone.clone.equals(cloneListCopy[k].clone)) {
-                  cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
-                } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
-              } //because the copy of the original will reinclude them every time we add a new Clone.
-            } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
+          //An jeder Stelle an der es das entsprechende Gen hat ist ein potentieller Austausch mit anderen Clonen möglich.
 
-            for (let l = 0; l < cloneListCopy.length; l++) {
-              if (cloneListCopy[i].clone[i] === gene) {
-                // wird die CloneList nach einem G-Gen an dieser Position durchsucht
-                positionsToChange = i; // wenn gefunden, wird die Position gespeichert der gefunde Clone wird aus der Liste entfernt
+          for (let l = 0; l < 6; l++) {
+            if (cloneListCopy[i].clone[m] === searchedGene) {
+              if (cloneWithHighestRating.clone[m] === gene) {
+                foundGene = true;
+                // wird die CloneList nach dem Benötigten Gen an dieser Position durchsucht (wenn gene = "y" wird "g" benötigt)
+                // wenn gefunden, wird der Clone gespeichert und wird aus der Liste entfernt
 
-                //in neuer Liste wird nach weiterem G-Gen gesucht an selber Position.
-                for (let j = 1; j <= cloneListCopy.length; j++) {
-                  if (cloneListCopy[j].clone[positionsToChange] === gene) {
-                    //Wenn gefunden, werden beide Clone gespeichert und deren gemeinsame G-Position. Abfrage ob diese gemeinsame rote Gene haben fehlt!
-                    geneCount = geneCount - 1;
-                    /*                  list.push({
-                      position: otherBadGenePosition,
-                      clone: cloneListCopy[i],
-                    });
-                    list.push({
-                      clone1: firstClone,
-                      clone2: secondClone,
-                      position: positionsToChange,
-                    }); */
-                    positionsToChange = "";
-                    /*                     cloneListCopy.splice(index, 1);
-                    cloneListCopy.splice(index, 1); */
-                    return;
-                  } else {
-                    if (cloneListCopy[cloneListCopy.length - 1] !== firstClone) {
-                      //Wenn kein zweiter Clone gefunden wurde wird der entfernte Clone der Liste wieder hinzugefügt.
-                      cloneListCopy.push(firstClone);
-                    }
-                  }
-                }
-
-                console.log("cloneAbleGPositions");
-                console.log(cloneAbleGPositions);
+                let clone = cloneDeep(cloneListCopy[i]);
+                usableList.push({ clone: clone, position: l });
+                /*                 usablePositionExists = list.find((el) => el.position === l); //Wenn ein Clone für eine Position hinzugefügt wird, er aber noch eine weitere position mit dem gesuchten gen hat, wird er nur für diejenige gefunden für die er hinzugefügt wurde. Es sollten vielleicht nicht nur Clone deren Genposition bei mindestens zwei Clonen enthalten sind hinzugefügt werden.
+                if (usablePositionExists) {
+                  list.push({ clone: clone, position: l });
+                  usablePositionExists = "";
+                } */
               }
+            }
+
+            if (l === 5 && foundGene === true) {
+              cloneListCopy.splice(i, 1);
+              foundGene = false;
             }
           }
         }
@@ -318,14 +303,169 @@ export default function Home() {
     }
   }
 
-  function findClonesForCrossbreeding(list) {
-    for (let i = 0; i < list.length; i++) {
-      for (let j = 1; j <= list.length; j++) {
-        let gen1 = list[i];
-        let gen2 = list[j];
-        if (gen1 == gen2) {
-          console.log(gen1);
-          console.log(gen2);
+  function findClonesForCrossbreedingR1(list) {
+    //alle clone deren positionen 2 oder mehrmals vorkommen in list Liste werden in list gepusht.
+
+    let potentialCrossbreedClone = [];
+    let crossbreedList = [];
+    let weighting = [];
+    let crossbreedCloneList = [];
+
+    for (let j = 0; j < list.length; j++) {
+      for (let k = j + 1; k < list.length; k++) {
+        if (list[j].position === list[k].position) {
+          for (let l = 0; l < list[j].clone.clone.length; l++) {
+            let cloneA = list[j].clone.clone[l];
+            let cloneB = list[k].clone.clone[l];
+            let cloneAWeighting = list[j].clone.cloneWeighting[l];
+            let cloneBWeighting = list[k].clone.cloneWeighting[l];
+            let bestClone = cloneWithHighestRating.clone[l];
+            let bestCloneWeighting = cloneWithHighestRating.cloneWeighting[l];
+
+            if (cloneA === cloneB) {
+              //Wenn das erste Gen an einer Stelle Gleich dem Zweiten ist
+              potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
+            } else if (cloneA === bestClone) {
+              //Wenn das Gen des ersten Clones An einer Stelle Gleich dem Besten Clone ist
+              potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
+            } else if (cloneB === bestClone) {
+              //Wenn das Gen des zweiten Clones An einer Stelle Gleich dem Besten Clone ist
+              potentialCrossbreedClone.push(cloneB); //....
+            } else if (cloneAWeighting > cloneBWeighting) {
+              //Andernfalls sind alle Gene an der Stelle unterschiedlich und das höchst gewichtete Gen muss überführt werden. Erstes größer Zweites:
+              if (cloneAWeighting > bestCloneWeighting) {
+                //und Erstes größer Bestes
+                potentialCrossbreedClone.push(cloneA); //Erstes ist am höchsten gewichtet und wird überführt
+              } else if (cloneAWeighting === bestCloneWeighting) {
+                //Wenn Erstes und Bestes gleich gewichtet sind
+                potentialCrossbreedClone.push(cloneA + "/" + bestClone); //Werden beide überführt
+              } else {
+                potentialCrossbreedClone.push(bestClone); //Sonst wird das beste überführt, da es das am höchsten gewichtete sein muss.
+              }
+            } else if (cloneAWeighting === cloneBWeighting) {
+              //wenn Erstes und Zweites gleich sind
+              if (cloneBWeighting === bestCloneWeighting) {
+                //Wenn alle gleich sind
+                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + bestClone); //werden alle überführt
+              } else if (bestCloneWeighting > cloneBWeighting) {
+                potentialCrossbreedClone.push(bestClone);
+              } else {
+                potentialCrossbreedClone.push(cloneA + "/" + cloneB); //sonst nur Erstes und Zweites
+              }
+            } else {
+              //Sonst ist das Zweite größer als das Erste
+              if (cloneBWeighting > bestCloneWeighting) {
+                //wenn das Zweite auch größer als das Beste ist
+                potentialCrossbreedClone.push(cloneB); //Wird Zweites überführt
+              } else if (cloneBWeighting === bestCloneWeighting) {
+                //Wenn das Zweite gleich groß wie das Beste ist
+                potentialCrossbreedClone.push(cloneB + "/" + bestClone); //Werden beide Überführt
+              } else {
+                potentialCrossbreedClone.push(bestClone); //Sonst wird nur das Beste überführt
+              }
+            }
+
+            if (l === 5) {
+              crossbreedList.push(potentialCrossbreedClone);
+              //Wenn alle Gene des Clones überführt wurden muss der potentielle Crossbreed Clone gewichtet werden. Und die Gewichtung mit der des Besten Clones verglichen werden.
+
+              potentialCrossbreedClone = [];
+            }
+          }
+        }
+      }
+    }
+    console.log("crossbreedList");
+    console.log(crossbreedList);
+    console.log("crossbreedCloneList");
+    console.log(crossbreedCloneList);
+
+    giveGeneWeighting(crossbreedList, crossbreedWeighting);
+    rateClone(crossbreedList, crossbreedCloneList, crossbreedWeighting);
+
+    for (const clone of crossbreedCloneList) {
+      if (clone.rating > bestRating) {
+        bestRating = clone.rating;
+        if (bestRating <= cloneWithHighestRating.rating && crossbreedList.length >= 3) {
+          needR2 = true;
+        }
+      }
+    }
+  }
+
+  function findClonesForCrossbreedingR2() {
+    let potentialCrossbreedClone = [];
+    let crossbreedList = [];
+    let weighting = [];
+    let crossbreedCloneList = [];
+
+    for (let j = 0; j < list.length; j++) {
+      for (let k = j + 1; k < list.length; k++) {
+        if (list[j].position === list[k].position) {
+          for (let l = k + 1; l < list.length; l++) {
+            if (list[j].position === list[m].position) {
+              for (let m = 0; l < list[j].clone.clone.length; m++) {
+                let cloneA = list[j].clone.clone[m];
+                let cloneB = list[k].clone.clone[m];
+                let cloneC = list[l].clone.clone[m];
+                let cloneAWeighting = list[j].clone.cloneWeighting[m];
+                let cloneBWeighting = list[k].clone.cloneWeighting[m];
+                let cloneCWeighting = list[l].clone.cloneWeighting[m];
+                let bestClone = cloneWithHighestRating.clone[m];
+                let bestCloneWeighting = cloneWithHighestRating.cloneWeighting[m];
+
+                if ((cloneA === cloneB) === cloneC) {
+                  //Wenn das erste Gen an einer Stelle Gleich dem Zweiten ist
+                  potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
+                } else if ((cloneA === cloneB) === bestClone) {
+                  //Wenn das Gen des ersten Clones An einer Stelle Gleich dem Besten Clone ist
+                  potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
+                } else if (cloneB === bestClone) {
+                  //Wenn das Gen des zweiten Clones An einer Stelle Gleich dem Besten Clone ist
+                  potentialCrossbreedClone.push(cloneB); //....
+                } else if (cloneAWeighting > cloneBWeighting) {
+                  //Andernfalls sind alle Gene an der Stelle unterschiedlich und das höchst gewichtete Gen muss überführt werden. Erstes größer Zweites:
+                  if (cloneAWeighting > bestCloneWeighting) {
+                    //und Erstes größer Bestes
+                    potentialCrossbreedClone.push(cloneA); //Erstes ist am höchsten gewichtet und wird überführt
+                  } else if (cloneAWeighting === bestCloneWeighting) {
+                    //Wenn Erstes und Bestes gleich gewichtet sind
+                    potentialCrossbreedClone.push(cloneA + "/" + bestClone); //Werden beide überführt
+                  } else {
+                    potentialCrossbreedClone.push(bestClone); //Sonst wird das beste überführt, da es das am höchsten gewichtete sein muss.
+                  }
+                } else if (cloneAWeighting === cloneBWeighting) {
+                  //wenn Erstes und Zweites gleich sind
+                  if (cloneBWeighting === bestCloneWeighting) {
+                    //Wenn alle gleich sind
+                    potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + bestClone); //werden alle überführt
+                  } else if (bestCloneWeighting > cloneBWeighting) {
+                    potentialCrossbreedClone.push(bestClone);
+                  } else {
+                    potentialCrossbreedClone.push(cloneA + "/" + cloneB); //sonst nur Erstes und Zweites
+                  }
+                } else {
+                  //Sonst ist das Zweite größer als das Erste
+                  if (cloneBWeighting > bestCloneWeighting) {
+                    //wenn das Zweite auch größer als das Beste ist
+                    potentialCrossbreedClone.push(cloneB); //Wird Zweites überführt
+                  } else if (cloneBWeighting === bestCloneWeighting) {
+                    //Wenn das Zweite gleich groß wie das Beste ist
+                    potentialCrossbreedClone.push(cloneB + "/" + bestClone); //Werden beide Überführt
+                  } else {
+                    potentialCrossbreedClone.push(bestClone); //Sonst wird nur das Beste überführt
+                  }
+                }
+
+                if (l === 5) {
+                  crossbreedList.push(potentialCrossbreedClone);
+                  //Wenn alle Gene des Clones überführt wurden muss der potentielle Crossbreed Clone gewichtet werden. Und die Gewichtung mit der des Besten Clones verglichen werden.
+
+                  potentialCrossbreedClone = [];
+                }
+              }
+            }
+          }
         }
       }
     }
