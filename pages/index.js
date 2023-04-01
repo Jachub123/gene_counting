@@ -38,8 +38,6 @@ export default function Home() {
   let copy = [];
   let positionsToChange = "";
   let cloneListCopy = undefined;
-  let findClonesForCrossbreedingR1G = [];
-  let findClonesForCrossbreedingR1Y = [];
   let needG = 0;
   let needY = 0;
   let usablePositionExists;
@@ -116,8 +114,10 @@ export default function Home() {
     findBestClone(cloneList);
     findUsableClones(needG, "g", cloneList);
     findUsableClones(needY, "y", cloneList);
-    findClonesForCrossbreedingR1(usableGeneList_g);
-    findClonesForCrossbreedingR1(usableGeneList_y);
+    findClonesForCrossbreedingR1(usableGeneList_g, cloneList);
+    findClonesForCrossbreedingR1(usableGeneList_y, cloneList);
+    findClonesForCrossbreedingR2(usableGeneList_g, cloneList);
+    findClonesForCrossbreedingR2(usableGeneList_y, cloneList);
   }
 
   function giveGeneWeighting(geneArr, list) {
@@ -277,8 +277,8 @@ export default function Home() {
           //An jeder Stelle an der es das entsprechende Gen hat ist ein potentieller Austausch mit anderen Clonen möglich.
 
           for (let l = 0; l < 6; l++) {
-            if (cloneListCopy[i].clone[m] === searchedGene) {
-              if (cloneWithHighestRating.clone[m] === gene) {
+            if (cloneListCopy[i].clone[l] === searchedGene) {
+              if (cloneWithHighestRating.clone[l] === gene) {
                 foundGene = true;
                 // wird die CloneList nach dem Benötigten Gen an dieser Position durchsucht (wenn gene = "y" wird "g" benötigt)
                 // wenn gefunden, wird der Clone gespeichert und wird aus der Liste entfernt
@@ -303,7 +303,7 @@ export default function Home() {
     }
   }
 
-  function findClonesForCrossbreedingR1(list) {
+  function findClonesForCrossbreedingR1(list, cloneList) {
     //alle clone deren positionen 2 oder mehrmals vorkommen in list Liste werden in list gepusht.
 
     let potentialCrossbreedClone = [];
@@ -368,17 +368,19 @@ export default function Home() {
             if (l === 5) {
               crossbreedList.push(potentialCrossbreedClone);
               //Wenn alle Gene des Clones überführt wurden muss der potentielle Crossbreed Clone gewichtet werden. Und die Gewichtung mit der des Besten Clones verglichen werden.
-
+              console.log("LaL");
               potentialCrossbreedClone = [];
             }
           }
         }
       }
+      console.log("crossbreedList");
+      console.log(crossbreedList);
+      console.log("crossbreedCloneList");
+      console.log(crossbreedCloneList);
+      console.log("bestRating");
+      console.log(bestRating);
     }
-    console.log("crossbreedList");
-    console.log(crossbreedList);
-    console.log("crossbreedCloneList");
-    console.log(crossbreedCloneList);
 
     giveGeneWeighting(crossbreedList, crossbreedWeighting);
     rateClone(crossbreedList, crossbreedCloneList, crossbreedWeighting);
@@ -386,14 +388,24 @@ export default function Home() {
     for (const clone of crossbreedCloneList) {
       if (clone.rating > bestRating) {
         bestRating = clone.rating;
-        if (bestRating <= cloneWithHighestRating.rating && crossbreedList.length >= 3) {
+        console.log("crossbreedList.length");
+        console.log(crossbreedList.length);
+        console.log("cloneWithHighestRating");
+        console.log(cloneWithHighestRating.rating);
+        console.log("bestRating");
+        console.log(bestRating);
+
+        if (bestRating <= cloneWithHighestRating.rating && cloneList.length >= 3) {
           needR2 = true;
         }
       }
     }
   }
 
-  function findClonesForCrossbreedingR2() {
+  function findClonesForCrossbreedingR2(list, cloneList) {
+    if (needR2 !== true) {
+      return;
+    }
     let potentialCrossbreedClone = [];
     let crossbreedList = [];
     let weighting = [];
@@ -402,73 +414,145 @@ export default function Home() {
     for (let j = 0; j < list.length; j++) {
       for (let k = j + 1; k < list.length; k++) {
         if (list[j].position === list[k].position) {
-          for (let l = k + 1; l < list.length; l++) {
-            if (list[j].position === list[m].position) {
-              for (let m = 0; l < list[j].clone.clone.length; m++) {
-                let cloneA = list[j].clone.clone[m];
-                let cloneB = list[k].clone.clone[m];
-                let cloneC = list[l].clone.clone[m];
-                let cloneAWeighting = list[j].clone.cloneWeighting[m];
-                let cloneBWeighting = list[k].clone.cloneWeighting[m];
-                let cloneCWeighting = list[l].clone.cloneWeighting[m];
-                let bestClone = cloneWithHighestRating.clone[m];
-                let bestCloneWeighting = cloneWithHighestRating.cloneWeighting[m];
+          for (let l = 0; l < cloneList.length; l++) {
+            for (let m = 0; m < list[j].clone.clone.length; m++) {
+              let cloneA = list[j].clone.clone[m];
+              let cloneB = list[k].clone.clone[m];
+              let cloneC = cloneList[l].clone[m];
+              let cloneAWeighting = list[j].clone.cloneWeighting[m];
+              let cloneBWeighting = list[k].clone.cloneWeighting[m];
+              let cloneCWeighting = cloneList[l].cloneWeighting[m];
+              let bestClone = cloneWithHighestRating.clone[m];
+              let bestCloneWeighting = cloneWithHighestRating.cloneWeighting[m];
 
-                if ((cloneA === cloneB) === cloneC) {
-                  //Wenn das erste Gen an einer Stelle Gleich dem Zweiten ist
-                  potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
-                } else if ((cloneA === cloneB) === bestClone) {
-                  //Wenn das Gen des ersten Clones An einer Stelle Gleich dem Besten Clone ist
-                  potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
-                } else if (cloneB === bestClone) {
-                  //Wenn das Gen des zweiten Clones An einer Stelle Gleich dem Besten Clone ist
-                  potentialCrossbreedClone.push(cloneB); //....
-                } else if (cloneAWeighting > cloneBWeighting) {
-                  //Andernfalls sind alle Gene an der Stelle unterschiedlich und das höchst gewichtete Gen muss überführt werden. Erstes größer Zweites:
-                  if (cloneAWeighting > bestCloneWeighting) {
-                    //und Erstes größer Bestes
-                    potentialCrossbreedClone.push(cloneA); //Erstes ist am höchsten gewichtet und wird überführt
-                  } else if (cloneAWeighting === bestCloneWeighting) {
-                    //Wenn Erstes und Bestes gleich gewichtet sind
-                    potentialCrossbreedClone.push(cloneA + "/" + bestClone); //Werden beide überführt
-                  } else {
-                    potentialCrossbreedClone.push(bestClone); //Sonst wird das beste überführt, da es das am höchsten gewichtete sein muss.
-                  }
-                } else if (cloneAWeighting === cloneBWeighting) {
-                  //wenn Erstes und Zweites gleich sind
-                  if (cloneBWeighting === bestCloneWeighting) {
-                    //Wenn alle gleich sind
-                    potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + bestClone); //werden alle überführt
-                  } else if (bestCloneWeighting > cloneBWeighting) {
-                    potentialCrossbreedClone.push(bestClone);
-                  } else {
-                    potentialCrossbreedClone.push(cloneA + "/" + cloneB); //sonst nur Erstes und Zweites
-                  }
+              if (cloneA === cloneB && cloneA === bestClone) {
+                potentialCrossbreedClone.push(cloneA);
+              } else if (cloneA === cloneB && cloneA === cloneC) {
+                potentialCrossbreedClone.push(cloneB);
+              } else if (cloneA === cloneC && cloneA === bestClone) {
+                potentialCrossbreedClone.push(cloneC);
+              } else if (cloneB === cloneC && cloneB === bestClone) {
+                potentialCrossbreedClone.push(bestClone);
+              } else if (cloneC === bestClone) {
+                if (cloneA !== cloneB) {
+                  potentialCrossbreedClone.push(cloneC);
                 } else {
-                  //Sonst ist das Zweite größer als das Erste
-                  if (cloneBWeighting > bestCloneWeighting) {
-                    //wenn das Zweite auch größer als das Beste ist
-                    potentialCrossbreedClone.push(cloneB); //Wird Zweites überführt
-                  } else if (cloneBWeighting === bestCloneWeighting) {
-                    //Wenn das Zweite gleich groß wie das Beste ist
-                    potentialCrossbreedClone.push(cloneB + "/" + bestClone); //Werden beide Überführt
+                  if (cloneCWeighting > cloneBWeighting) {
+                    potentialCrossbreedClone.push(cloneC);
+                  } else if (cloneCWeighting === cloneBWeighting) {
+                    potentialCrossbreedClone.push(cloneC + "/" + cloneB);
                   } else {
-                    potentialCrossbreedClone.push(bestClone); //Sonst wird nur das Beste überführt
+                    potentialCrossbreedClone.push(cloneB);
                   }
                 }
-
-                if (l === 5) {
-                  crossbreedList.push(potentialCrossbreedClone);
-                  //Wenn alle Gene des Clones überführt wurden muss der potentielle Crossbreed Clone gewichtet werden. Und die Gewichtung mit der des Besten Clones verglichen werden.
-
-                  potentialCrossbreedClone = [];
+              } else if (cloneA === cloneB) {
+                if (cloneC !== bestClone) {
+                  potentialCrossbreedClone.push(cloneA);
+                } else {
+                  if (cloneAWeighting > bestCloneWeighting) {
+                    potentialCrossbreedClone.push(cloneA);
+                  } else if (cloneAWeighting === bestCloneWeighting) {
+                    potentialCrossbreedClone.push(cloneA + "/" + bestClone);
+                  } else {
+                    potentialCrossbreedClone.push(bestClone);
+                  }
                 }
+              } else if (cloneA === cloneC) {
+                if (cloneB !== bestClone) {
+                  potentialCrossbreedClone.push(cloneA);
+                } else {
+                  if (cloneAWeighting > bestCloneWeighting) {
+                    potentialCrossbreedClone.push(cloneA);
+                  } else if (cloneAWeighting === bestCloneWeighting) {
+                    potentialCrossbreedClone.push(cloneA + "/" + bestClone);
+                  } else {
+                    potentialCrossbreedClone.push(bestClone);
+                  }
+                }
+              } else if (cloneA === bestClone) {
+                if (cloneB !== cloneC) {
+                  potentialCrossbreedClone.push(cloneA);
+                } else {
+                  if (cloneAWeighting > cloneCWeighting) {
+                    potentialCrossbreedClone.push(cloneA);
+                  } else if (cloneAWeighting === cloneCWeighting) {
+                    potentialCrossbreedClone.push(cloneA + "/" + cloneC);
+                  } else {
+                    potentialCrossbreedClone.push(cloneC);
+                  }
+                }
+              } else if (cloneB === cloneC) {
+                if (cloneA !== bestClone) {
+                  potentialCrossbreedClone.push(cloneB);
+                } else {
+                  if (cloneBWeighting > bestCloneWeighting) {
+                    potentialCrossbreedClone.push(cloneB);
+                  } else if (cloneBWeighting === bestCloneWeighting) {
+                    potentialCrossbreedClone.push(cloneB + "/" + bestClone);
+                  } else {
+                    potentialCrossbreedClone.push(bestClone);
+                  }
+                }
+              } else if (cloneB === bestClone) {
+                if (cloneA !== cloneC) {
+                  potentialCrossbreedClone.push(cloneB);
+                } else {
+                  if (cloneBWeighting > cloneCWeighting) {
+                    potentialCrossbreedClone.push(cloneB);
+                  } else if (cloneBWeighting === cloneCWeighting) {
+                    potentialCrossbreedClone.push(cloneB + "/" + cloneC);
+                  } else {
+                    potentialCrossbreedClone.push(cloneC);
+                  }
+                }
+              } else if (
+                cloneAWeighting > cloneBWeighting &&
+                cloneAWeighting > cloneCWeighting &&
+                cloneAWeighting > bestCloneWeighting
+              ) {
+                potentialCrossbreedClone.push(cloneA);
+              } else if (
+                cloneBWeighting > cloneAWeighting &&
+                cloneBWeighting > cloneCWeighting &&
+                cloneBWeighting > bestCloneWeighting
+              ) {
+                potentialCrossbreedClone.push(cloneB);
+              } else if (
+                cloneCWeighting > cloneAWeighting &&
+                cloneCWeighting > cloneBWeighting &&
+                cloneCWeighting > bestCloneWeighting
+              ) {
+                potentialCrossbreedClone.push(cloneC);
+              } else if (
+                bestCloneWeighting > cloneAWeighting &&
+                bestCloneWeighting > cloneBWeighting &&
+                bestCloneWeighting > cloneCWeighting
+              ) {
+                potentialCrossbreedClone.push(bestClone);
+              }
+
+              if (m === 5) {
+                crossbreedList.push(potentialCrossbreedClone);
+                console.log("potentialCrossbreedClone");
+                console.log(potentialCrossbreedClone);
+                potentialCrossbreedClone = [];
+                console.log("crossbreedList");
+
+                console.log(crossbreedList);
+                console.log("crossbreedCloneList");
+                console.log(crossbreedCloneList);
+              }
+
+              if (j === list.length - 1) {
+                needR2 = false;
               }
             }
           }
         }
       }
     }
+    giveGeneWeighting(crossbreedList, crossbreedWeighting);
+    rateClone(crossbreedList, crossbreedCloneList, crossbreedWeighting);
   }
 
   return (
