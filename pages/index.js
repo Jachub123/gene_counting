@@ -1,7 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import React from "react";
 import { useState } from "react";
 import cloneDeep from "lodash/cloneDeep";
 
@@ -99,8 +98,6 @@ export default function Home() {
   }
 
   function addClone() {
-    let cloneList = [];
-
     addGenes();
     if (!clone) {
       return;
@@ -112,15 +109,15 @@ export default function Home() {
     });
 
     clone = [];
+  }
+
+  function crossbreed() {
+    let cloneList = [];
     giveGeneWeighting(genePool, geneWeightingList);
     rateClone(genePool, cloneList, geneWeightingList);
     findBestClone(cloneList);
-    findUsableClones(needG, "g", cloneList);
-    findUsableClones(needY, "y", cloneList);
-    findClonesForCrossbreedingR1(usableGeneList_g, cloneList);
-    findClonesForCrossbreedingR1(usableGeneList_y, cloneList);
-    findClonesForCrossbreedingR2(usableGeneList_g, cloneList, "g");
-    findClonesForCrossbreedingR2(usableGeneList_y, cloneList, "y");
+    findClonesForCrossbreedingR1(cloneList);
+    findClonesForCrossbreedingR2(cloneList);
   }
 
   function giveGeneWeighting(geneArr, list, crossbreed) {
@@ -172,13 +169,7 @@ export default function Home() {
         geneArr[i].map((gene, index) => {
           if (gene.includes("y")) {
             if (gene.includes("g")) {
-              if (geneCounterG < perfectHempSeedG) {
-                geneCounterG++;
-                weakGenesRating = weakGenesRating + 1;
-              } else {
-                geneCounterG++;
-                weakGenesRating = weakGenesRating + 0.6;
-              }
+              weakGenesRating = weakGenesRating + 1;
             } else {
               if (geneCounterY < perfectHempSeedY) {
                 geneCounterY++;
@@ -227,13 +218,7 @@ export default function Home() {
         geneArr[i].clone.map((gene, index) => {
           if (gene.includes("y")) {
             if (gene.includes("g")) {
-              if (geneCounterG < perfectHempSeedG) {
-                geneCounterG++;
-                weakGenesRating = weakGenesRating + 1;
-              } else {
-                geneCounterG++;
-                weakGenesRating = weakGenesRating + 0.6;
-              }
+              weakGenesRating = weakGenesRating + 1;
             } else {
               if (geneCounterY < perfectHempSeedY) {
                 geneCounterY++;
@@ -292,16 +277,6 @@ export default function Home() {
     });
     needG = perfectHempSeedG - cloneWithHighestRating.g;
     needY = perfectHempSeedY - cloneWithHighestRating.y;
-    console.log("genePool");
-    console.log(genePool);
-    console.log("cloneList");
-    console.log(list);
-    console.log("cloneWithHighestRating");
-    console.log(cloneWithHighestRating);
-    console.log("usableGeneList_g");
-    console.log(usableGeneList_g);
-    console.log("usableGeneList_y");
-    console.log(usableGeneList_y);
   }
 
   function findUsableClones(geneCount, gene, list) {
@@ -396,7 +371,7 @@ export default function Home() {
     }
   }
 
-  function findClonesForCrossbreedingR1(list, cloneList) {
+  function findClonesForCrossbreedingR1(list) {
     //alle clone deren positionen 2 oder mehrmals vorkommen in list Liste werden in list gepusht.
 
     if (list.length <= 1) {
@@ -410,60 +385,60 @@ export default function Home() {
 
     for (let j = 0; j < list.length; j++) {
       for (let k = j + 1; k < list.length; k++) {
-        if (list[j].position === list[k].position) {
-          for (let l = 0; l < list[j].clone.clone.length; l++) {
-            let cloneA = list[j].clone.clone[l];
-            let cloneB = list[k].clone.clone[l];
-            let cloneAWeighting = list[j].clone.cloneWeighting[l];
-            let cloneBWeighting = list[k].clone.cloneWeighting[l];
-            let bestClone = cloneWithHighestRating.clone[l];
-            let bestCloneWeighting = cloneWithHighestRating.cloneWeighting[l];
+        for (let m = 0; m < list.length; m++) {
+          for (let l = 0; l < list[j].clone.length; l++) {
+            let cloneA = list[j].clone[l];
+            let cloneB = list[k].clone[l];
+            let cloneD = list[m].clone[l];
+            let cloneAWeighting = list[j].cloneWeighting[l];
+            let cloneBWeighting = list[k].cloneWeighting[l];
+            let cloneDWeighting = list[m].cloneWeighting[l];
 
             if (cloneA === cloneB) {
               //Wenn das erste Gen an einer Stelle Gleich dem Zweiten ist
               potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
-            } else if (cloneA === bestClone) {
+            } else if (cloneA === cloneD) {
               //Wenn das Gen des ersten Clones An einer Stelle Gleich dem Besten Clone ist
               potentialCrossbreedClone.push(cloneA); //wird dieses Gen in den potentiellen CrossbreedClone überführt
-            } else if (cloneB === bestClone) {
+            } else if (cloneB === cloneD) {
               //Wenn das Gen des zweiten Clones An einer Stelle Gleich dem Besten Clone ist
               potentialCrossbreedClone.push(cloneB); //....
             } else if (cloneAWeighting > cloneBWeighting) {
               //Andernfalls sind alle Gene an der Stelle unterschiedlich und das höchst gewichtete Gen muss überführt werden. Erstes größer Zweites:
-              if (cloneAWeighting > bestCloneWeighting) {
+              if (cloneAWeighting > cloneDWeighting) {
                 //und Erstes größer Bestes
                 potentialCrossbreedClone.push(cloneA); //Erstes ist am höchsten gewichtet und wird überführt
-              } else if (cloneAWeighting === bestCloneWeighting) {
+              } else if (cloneAWeighting === cloneDWeighting) {
                 //Wenn Erstes und Bestes gleich gewichtet sind
-                potentialCrossbreedClone.push(cloneA + "/" + bestClone); //Werden beide überführt
+                potentialCrossbreedClone.push(cloneA + "/" + cloneD); //Werden beide überführt
               } else {
-                potentialCrossbreedClone.push(bestClone); //Sonst wird das beste überführt, da es das am höchsten gewichtete sein muss.
+                potentialCrossbreedClone.push(cloneD); //Sonst wird das beste überführt, da es das am höchsten gewichtete sein muss.
               }
             } else if (cloneAWeighting === cloneBWeighting) {
               //wenn Erstes und Zweites gleich sind
-              if (cloneBWeighting === bestCloneWeighting) {
+              if (cloneBWeighting === cloneDWeighting) {
                 //Wenn alle gleich sind
-                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + bestClone); //werden alle überführt
-              } else if (bestCloneWeighting > cloneBWeighting) {
-                potentialCrossbreedClone.push(bestClone);
+                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + cloneD); //werden alle überführt
+              } else if (cloneDWeighting > cloneBWeighting) {
+                potentialCrossbreedClone.push(cloneD);
               } else {
                 potentialCrossbreedClone.push(cloneA + "/" + cloneB); //sonst nur Erstes und Zweites
               }
             } else {
               //Sonst ist das Zweite größer als das Erste
-              if (cloneBWeighting > bestCloneWeighting) {
+              if (cloneBWeighting > cloneDWeighting) {
                 //wenn das Zweite auch größer als das Beste ist
                 potentialCrossbreedClone.push(cloneB); //Wird Zweites überführt
-              } else if (cloneBWeighting === bestCloneWeighting) {
+              } else if (cloneBWeighting === cloneDWeighting) {
                 //Wenn das Zweite gleich groß wie das Beste ist
-                potentialCrossbreedClone.push(cloneB + "/" + bestClone); //Werden beide Überführt
+                potentialCrossbreedClone.push(cloneB + "/" + cloneD); //Werden beide Überführt
               } else {
-                potentialCrossbreedClone.push(bestClone); //Sonst wird nur das Beste überführt
+                potentialCrossbreedClone.push(cloneD); //Sonst wird nur das Beste überführt
               }
             }
 
             if (l === 5) {
-              crossbreedList.push({ clone: potentialCrossbreedClone, crossbreedClones: [j, k] });
+              crossbreedList.push({ clone: potentialCrossbreedClone, crossbreedClones: [j, k, m] });
               //Wenn alle Gene des Clones überführt wurden muss der potentielle Crossbreed Clone gewichtet werden. Und die Gewichtung mit der des Besten Clones verglichen werden.
               potentialCrossbreedClone = [];
             }
@@ -479,32 +454,24 @@ export default function Home() {
       if (clone.rating > bestRating) {
         bestRating = clone.rating;
 
-        if (bestRating <= cloneWithHighestRating.rating && cloneList.length >= 3) {
+        if (bestRating <= cloneWithHighestRating.rating && list.length >= 3) {
           needR2 = true;
         } else if (bestRating > cloneWithHighestRating.rating) {
           setcrossbreedR({
-            cloneA: list[clone.crossbreedPartners[0]].clone.clone,
-            cloneB: list[clone.crossbreedPartners[1]].clone.clone,
-            bestClone: cloneWithHighestRating.clone,
+            cloneA: list[clone.crossbreedPartners[0]].clone,
+            cloneB: list[clone.crossbreedPartners[1]].clone,
+            cloneD: list[clone.crossbreedPartners[2]].clone,
             result: clone.clone,
           });
-          console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-          console.log(crossbreedR);
+
           setCrossbreedList(crossbreedCloneList);
           setCloneWithHighestRating(cloneWithHighestRating);
         }
       }
     }
-
-    console.log("resultCrossbreedList");
-    console.log(resultCrossbreedList);
-    console.log("crossbreedList");
-    console.log(crossbreedList);
-    console.log("crossbreedCloneList");
-    console.log(crossbreedCloneList);
   }
 
-  function findClonesForCrossbreedingR2(list, cloneList, whichList) {
+  function findClonesForCrossbreedingR2(list) {
     if (needR2 !== true) {
       return;
     }
@@ -520,27 +487,27 @@ export default function Home() {
     let crossbreedWeighting = [];
     for (let j = 0; j < list.length; j++) {
       for (let k = j + 1; k < list.length; k++) {
-        if (list[j].position === list[k].position) {
-          for (let l = 0; l < cloneList.length; l++) {
-            for (let m = 0; m < list[j].clone.clone.length; m++) {
-              let cloneA = list[j].clone.clone[m];
-              let cloneB = list[k].clone.clone[m];
-              let cloneC = cloneList[l].clone[m];
-              let cloneAWeighting = list[j].clone.cloneWeighting[m];
-              let cloneBWeighting = list[k].clone.cloneWeighting[m];
-              let cloneCWeighting = cloneList[l].cloneWeighting[m];
-              let bestClone = cloneWithHighestRating.clone[m];
-              let bestCloneWeighting = cloneWithHighestRating.cloneWeighting[m];
+        for (let n = k + 1; n < list.length; n++) {
+          for (let l = 0; l < list.length; l++) {
+            for (let m = 0; m < list[j].clone.length; m++) {
+              let cloneA = list[j].clone[m];
+              let cloneB = list[k].clone[m];
+              let cloneC = list[l].clone[m];
+              let cloneD = list[n].clone[m];
+              let cloneAWeighting = list[j].cloneWeighting[m];
+              let cloneBWeighting = list[k].cloneWeighting[m];
+              let cloneCWeighting = list[l].cloneWeighting[m];
+              let cloneDWeighting = list[n].cloneWeighting[m];
 
-              if (cloneA === cloneB && cloneA === bestClone) {
+              if (cloneA === cloneB && cloneA === cloneD) {
                 potentialCrossbreedClone.push(cloneA);
               } else if (cloneA === cloneB && cloneA === cloneC) {
                 potentialCrossbreedClone.push(cloneB);
-              } else if (cloneA === cloneC && cloneA === bestClone) {
+              } else if (cloneA === cloneC && cloneA === cloneD) {
                 potentialCrossbreedClone.push(cloneC);
-              } else if (cloneB === cloneC && cloneB === bestClone) {
-                potentialCrossbreedClone.push(bestClone);
-              } else if (cloneC === bestClone) {
+              } else if (cloneB === cloneC && cloneB === cloneD) {
+                potentialCrossbreedClone.push(cloneD);
+              } else if (cloneC === cloneD) {
                 if (cloneA !== cloneB) {
                   potentialCrossbreedClone.push(cloneC);
                 } else {
@@ -553,30 +520,30 @@ export default function Home() {
                   }
                 }
               } else if (cloneA === cloneB) {
-                if (cloneC !== bestClone) {
+                if (cloneC !== cloneD) {
                   potentialCrossbreedClone.push(cloneA);
                 } else {
-                  if (cloneAWeighting > bestCloneWeighting) {
+                  if (cloneAWeighting > cloneDWeighting) {
                     potentialCrossbreedClone.push(cloneA);
-                  } else if (cloneAWeighting === bestCloneWeighting) {
-                    potentialCrossbreedClone.push(cloneA + "/" + bestClone);
+                  } else if (cloneAWeighting === cloneDWeighting) {
+                    potentialCrossbreedClone.push(cloneA + "/" + cloneD);
                   } else {
-                    potentialCrossbreedClone.push(bestClone);
+                    potentialCrossbreedClone.push(cloneD);
                   }
                 }
               } else if (cloneA === cloneC) {
-                if (cloneB !== bestClone) {
+                if (cloneB !== cloneD) {
                   potentialCrossbreedClone.push(cloneA);
                 } else {
-                  if (cloneAWeighting > bestCloneWeighting) {
+                  if (cloneAWeighting > cloneDWeighting) {
                     potentialCrossbreedClone.push(cloneA);
-                  } else if (cloneAWeighting === bestCloneWeighting) {
-                    potentialCrossbreedClone.push(cloneA + "/" + bestClone);
+                  } else if (cloneAWeighting === cloneDWeighting) {
+                    potentialCrossbreedClone.push(cloneA + "/" + cloneD);
                   } else {
-                    potentialCrossbreedClone.push(bestClone);
+                    potentialCrossbreedClone.push(cloneD);
                   }
                 }
-              } else if (cloneA === bestClone) {
+              } else if (cloneA === cloneD) {
                 if (cloneB !== cloneC) {
                   potentialCrossbreedClone.push(cloneA);
                 } else {
@@ -589,18 +556,18 @@ export default function Home() {
                   }
                 }
               } else if (cloneB === cloneC) {
-                if (cloneA !== bestClone) {
+                if (cloneA !== cloneD) {
                   potentialCrossbreedClone.push(cloneB);
                 } else {
-                  if (cloneBWeighting > bestCloneWeighting) {
+                  if (cloneBWeighting > cloneDWeighting) {
                     potentialCrossbreedClone.push(cloneB);
-                  } else if (cloneBWeighting === bestCloneWeighting) {
-                    potentialCrossbreedClone.push(cloneB + "/" + bestClone);
+                  } else if (cloneBWeighting === cloneDWeighting) {
+                    potentialCrossbreedClone.push(cloneB + "/" + cloneD);
                   } else {
-                    potentialCrossbreedClone.push(bestClone);
+                    potentialCrossbreedClone.push(cloneD);
                   }
                 }
-              } else if (cloneB === bestClone) {
+              } else if (cloneB === cloneD) {
                 if (cloneA !== cloneC) {
                   potentialCrossbreedClone.push(cloneB);
                 } else {
@@ -614,85 +581,85 @@ export default function Home() {
                 }
               } else if (
                 cloneAWeighting === cloneBWeighting &&
-                cloneAWeighting === bestCloneWeighting &&
+                cloneAWeighting === cloneDWeighting &&
                 cloneAWeighting === cloneCWeighting
               ) {
-                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + bestClone + "/" + cloneC);
+                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + cloneD + "/" + cloneC);
               } else if (
                 cloneAWeighting > cloneBWeighting &&
                 cloneAWeighting > cloneCWeighting &&
-                cloneAWeighting > bestCloneWeighting
+                cloneAWeighting > cloneDWeighting
               ) {
                 potentialCrossbreedClone.push(cloneA);
               } else if (
                 cloneBWeighting > cloneCWeighting &&
-                cloneBWeighting > bestCloneWeighting &&
+                cloneBWeighting > cloneDWeighting &&
                 cloneBWeighting > cloneAWeighting
               ) {
                 potentialCrossbreedClone.push(cloneB);
               } else if (
                 cloneCWeighting > cloneAWeighting &&
-                cloneCWeighting > bestCloneWeighting &&
+                cloneCWeighting > cloneDWeighting &&
                 cloneCWeighting > cloneBWeighting
               ) {
                 potentialCrossbreedClone.push(cloneC);
               } else if (
-                bestCloneWeighting > cloneAWeighting &&
-                bestCloneWeighting > cloneCWeighting &&
-                bestCloneWeighting > cloneBWeighting
+                cloneDWeighting > cloneAWeighting &&
+                cloneDWeighting > cloneCWeighting &&
+                cloneDWeighting > cloneBWeighting
               ) {
-                potentialCrossbreedClone.push(bestClone);
-              } else if (cloneCWeighting === bestCloneWeighting) {
+                potentialCrossbreedClone.push(cloneD);
+              } else if (cloneCWeighting === cloneDWeighting) {
                 if (cloneAWeighting !== cloneBWeighting) {
-                  potentialCrossbreedClone.push(cloneC + "/" + bestClone);
+                  potentialCrossbreedClone.push(cloneC + "/" + cloneD);
                 } else {
                   if (cloneCWeighting > cloneBWeighting) {
-                    potentialCrossbreedClone.push(cloneC + "/" + bestClone);
+                    potentialCrossbreedClone.push(cloneC + "/" + cloneD);
                   } else {
                     potentialCrossbreedClone.push(cloneB + "/" + cloneA);
                   }
                 }
               } else if (cloneAWeighting === cloneBWeighting) {
-                if (cloneCWeighting !== bestCloneWeighting) {
+                if (cloneCWeighting !== cloneDWeighting) {
                   potentialCrossbreedClone.push(cloneA + "/" + cloneB);
                 } else {
-                  if (cloneAWeighting > bestCloneWeighting) {
+                  if (cloneAWeighting > cloneDWeighting) {
                     potentialCrossbreedClone.push(cloneA + "/" + cloneB);
                   } else {
-                    potentialCrossbreedClone.push(bestClone + "/" + cloneC);
+                    potentialCrossbreedClone.push(cloneD + "/" + cloneC);
                   }
                 }
               } else if (cloneAWeighting === cloneCWeighting) {
-                if (cloneBWeighting !== bestCloneWeighting) {
+                if (cloneBWeighting !== cloneDWeighting) {
                   potentialCrossbreedClone.push(cloneA + "/" + cloneC);
                 } else {
-                  if (cloneAWeighting > bestCloneWeighting) {
+                  if (cloneAWeighting > cloneDWeighting) {
                     potentialCrossbreedClone.push(cloneA + "/" + cloneC);
                   } else {
-                    potentialCrossbreedClone.push(cloneB + "/" + bestClone);
+                    potentialCrossbreedClone.push(cloneB + "/" + cloneD);
                   }
                 }
-              } else if (cloneAWeighting === bestCloneWeighting) {
+              } else if (cloneAWeighting === cloneDWeighting) {
                 if (cloneBWeighting !== cloneCWeighting) {
-                  potentialCrossbreedClone.push(cloneA + "/" + bestClone);
+                  potentialCrossbreedClone.push(cloneA + "/" + cloneD);
                 } else {
                   if (cloneAWeighting > cloneCWeighting) {
-                    potentialCrossbreedClone.push(cloneA + "/" + bestClone);
+                    potentialCrossbreedClone.push(cloneA + "/" + cloneD);
                   } else {
                     potentialCrossbreedClone.push(cloneB + "/" + cloneC);
                   }
                 }
               } else if (cloneBWeighting === cloneCWeighting) {
-                if (cloneAWeighting !== bestCloneWeighting) {
+                if (cloneAWeighting !== cloneDWeighting) {
                   potentialCrossbreedClone.push(cloneB + "/" + cloneC);
                 }
-              } else if (cloneBWeighting === bestCloneWeighting) {
+              } else if (cloneBWeighting === cloneDWeighting) {
                 if (cloneAWeighting !== cloneCWeighting) {
-                  potentialCrossbreedClone.push(cloneB + "/" + bestClone);
+                  potentialCrossbreedClone.push(cloneB + "/" + cloneD);
                 }
               }
               if (m === 5) {
-                crossbreedList.push({ clone: potentialCrossbreedClone, crossbreedClones: [j, k, l] });
+                crossbreedList.push({ clone: potentialCrossbreedClone, crossbreedClones: [j, k, l, n] });
                 potentialCrossbreedClone = [];
               }
 
@@ -712,50 +679,32 @@ export default function Home() {
       if (clone.rating > bestRating) {
         bestRating = clone.rating;
 
-        console.log("cloneWithHighestRating.rating");
-        console.log(cloneWithHighestRating.rating);
-        console.log("bestRating");
-        console.log(bestRating);
-
         if (bestRating > cloneWithHighestRating.rating) {
-          result2 = {
-            cloneA: list[clone.crossbreedPartners[0]].clone.clone,
-            cloneB: list[clone.crossbreedPartners[1]].clone.clone,
-            cloneC: cloneList[clone.crossbreedPartners[2]].clone,
-            bestClone: cloneWithHighestRating.clone,
+          setcrossbreedR({
+            cloneA: list[clone.crossbreedPartners[0]].clone,
+            cloneB: list[clone.crossbreedPartners[1]].clone,
+            cloneC: list[clone.crossbreedPartners[2]].clone,
+            cloneD: list[clone.crossbreedPartners[3]].clone,
             result: clone.clone,
-          };
+          });
         } else {
-          secondBestresult2 = {
-            cloneA: list[clone.crossbreedPartners[0]].clone.clone,
-            cloneB: list[clone.crossbreedPartners[1]].clone.clone,
-            cloneC: cloneList[clone.crossbreedPartners[2]].clone,
-            bestClone: cloneWithHighestRating.clone,
+          setSecondBestCrossbreedR({
+            cloneA: list[clone.crossbreedPartners[0]].clone,
+            cloneB: list[clone.crossbreedPartners[1]].clone,
+            cloneC: list[clone.crossbreedPartners[2]].clone,
+            cloneD: list[clone.crossbreedPartners[3]].clone,
             result: clone.clone,
-          };
+          });
         }
       }
     }
 
-    setSecondBestCrossbreedR(secondBestresult2);
-    setcrossbreedR(result2);
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    console.log(result2);
     setCrossbreedList(crossbreedCloneList);
     setCloneWithHighestRating(cloneWithHighestRating);
-
-    console.log("resultCrossbreedList");
-    console.log(resultCrossbreedList);
-    console.log("crossbreedList");
-    console.log(crossbreedList);
-    console.log("crossbreedCloneList");
-    console.log(crossbreedCloneList);
-    console.log("result");
-    console.log(crossbreedR);
   }
 
   function renderCrossbreedResult() {
-    if (Object.values(crossbreedR).length === 0 && resultCrossbreedList.length === 0) {
+    if (Object.values(crossbreedR).length === 0) {
       return <h1>Feed me clones!</h1>;
     } else if (resultCrossbreedList.length > 0 && Object.values(crossbreedR).length === 0) {
       return (
@@ -801,7 +750,7 @@ export default function Home() {
             })}
           </div>
           <div className="clone">
-            {secondBestCrossbreedR.bestClone.map((gene, index) => {
+            {secondBestCrossbreedR.cloneD.map((gene, index) => {
               if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
                 return <p className="green">{gene}</p>;
               } else {
@@ -854,7 +803,7 @@ export default function Home() {
               : ""}
           </div>
           <div className="clone">
-            {crossbreedR.bestClone.map((gene) => {
+            {crossbreedR.cloneD.map((gene) => {
               if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
                 return <p className="green">{gene}</p>;
               } else {
@@ -973,51 +922,14 @@ export default function Home() {
         <button onClick={addClone} formAction="">
           Add Clone
         </button>
+        <button onClick={crossbreed} formAction="">
+          Start Crossbreed
+        </button>
       </div>
 
       <div className="flex">
         <div>{renderCrossbreedResult()}</div>
-
-        {/*         {cloneWithHighestRating.positionBadGenes ? (
-          cloneWithHighestRating.positionBadGenes.length > 1 ? (
-            <div>
-              <h1>Step Two: </h1>
-
-              <div>
-                <p>{C1step2}</p>
-                <p>{C2step2}</p>
-                <p>{crossbreedR[0] ? crossbreedR[0].clone : ""}</p>
-                <p>{crossbreedR[0] ? crossbreedR[0].clone : ""}</p>
-              </div>
-            </div>
-          ) : (
-            ""
-          )
-        ) : (
-          ""
-        )}
-        {cloneWithHighestRating.positionBadGenes ? (
-          cloneWithHighestRating.positionBadGenes.length > 2 ? (
-            <div>
-              <h1>Step Three: </h1>
-
-              <div>
-                <p>{C1step2}</p>
-                <p>{C2step2}</p>
-                <p>{crossbreedR[1] ? crossbreedR[1].clone : ""}</p>
-                <p>{crossbreedR[1] ? crossbreedR[1].clone : ""}</p>
-              </div>
-            </div>
-          ) : (
-            ""
-          )
-        ) : (
-          ""
-        )} */}
       </div>
-      {/*         <button type="submit" action="post" onClick={findCrossbreadPair()}>
-          check for best Genes
-        </button> */}
     </div>
   );
 }
