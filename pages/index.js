@@ -1005,6 +1005,8 @@ export default function Home() {
           {renderCloneList()}
         </div>
       </div>
+
+      <Analytics />
     </div>
   );
 }
