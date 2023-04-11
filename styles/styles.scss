@@ -80,10 +80,37 @@ html {
   }
 }
 
+.hidden {
+  display: none;
+}
+
+h3 {
+  margin: 0.5rem 0;
+}
+h4 {
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+  color: rgb(189, 189, 189);
+  span {
+    border-radius: 5px;
+    padding: 2px;
+  }
+}
 .red {
   background-color: red;
 }
-
+.column {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
+input[type="number"] {
+  width: 40px;
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 1;
+  }
+}
 .green {
   background-color: limegreen;
 }

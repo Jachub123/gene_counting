@@ -4,10 +4,13 @@ import styles from "../styles/Home.module.css";
 import { useState } from "react";
 import cloneDeep from "lodash/cloneDeep";
 import { useCookies } from "react-cookie";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function Home() {
   const [secondBestCrossbreedR, setSecondBestCrossbreedR] = useState({});
   const [resultCrossbreedList, setCrossbreedList] = useState([]);
+  const [geneCountG, setGeneCountG] = useState();
+  const [geneCountY, setGeneCountY] = useState();
   const [crossbreedR, setcrossbreedR] = useState({});
   let [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
   const [cookies, setCookie] = useCookies(["cloneList"]);
@@ -47,6 +50,7 @@ export default function Home() {
   let needR2 = false;
   let result1 = {};
   let secondBestresult1;
+  let showInfo = false;
 
   let result2 = {};
   let secondBestresult2;
@@ -81,6 +85,56 @@ export default function Home() {
   /*   if (typeof window !== "undefined") {
     document.getElementById("0").focus();
   } */
+
+  function perfectClone(gene) {
+    let otherValue;
+    let yCount = document.getElementById("y").value;
+    let gCount = document.getElementById("g").value;
+    if (gene.target.id === "y") {
+      otherValue = gCount;
+    } else {
+      otherValue = yCount;
+    }
+    console.log("gCount + yCount");
+    console.log(Number(gCount) + Number(yCount));
+    console.log("gCount");
+    console.log(gCount);
+    console.log("otherValue");
+    console.log(otherValue);
+    if (Number(gCount) + Number(yCount) > 6 || gene.target.value < 0) {
+      gene.target.value = 6 - otherValue;
+      if (gene.target.id === "y") {
+        yCount = gene.target.value;
+        perfectHempSeedY = gene.target.value;
+        perfectHempSeedG = otherValue;
+      } else {
+        gCount = gene.target.value;
+        perfectHempSeedG = gene.target.value;
+        perfectHempSeedY = otherValue;
+      }
+      console.log("> 6");
+      console.log(perfectHempSeedY);
+      console.log(perfectHempSeedG);
+    }
+    if (Number(gCount) + Number(yCount) === 6) {
+      perfectHempSeedY = yCount;
+      perfectHempSeedG = gCount;
+      console.log("=== 6");
+      console.log(perfectHempSeedY);
+      console.log(perfectHempSeedG);
+      setGeneCountG(perfectHempSeedG);
+      setGeneCountY(perfectHempSeedY);
+      document.getElementById("defaultGenes").classList.add("hidden");
+      document.getElementById("customGenes").classList.remove("hidden");
+    } else {
+      document.getElementById("defaultGenes").classList.remove("hidden");
+      document.getElementById("customGenes").classList.add("hidden");
+      console.log("42 blaze it");
+      setGeneCountG(2);
+      setGeneCountY(4);
+    }
+  }
+
   function addGenes(e) {
     if (e) {
       if (e.target.value.toLowerCase() === "x" || e.target.value.toLowerCase() === "w") {
@@ -171,6 +225,10 @@ export default function Home() {
     console.log(cloneList);
     console.log("cookies.cloneList");
     console.log(cookies.cloneList);
+    console.log("perfectHempSeedG");
+    console.log(perfectHempSeedG);
+    console.log("perfectHempSeedY");
+    console.log(perfectHempSeedY);
     findBestClone(cloneList);
     findClonesForCrossbreedingR1(cloneList);
     findClonesForCrossbreedingR2(cloneList);
@@ -227,7 +285,7 @@ export default function Home() {
             if (gene.includes("g")) {
               weakGenesRating = weakGenesRating + 1;
             } else {
-              if (geneCounterY < perfectHempSeedY) {
+              if (geneCounterY < geneCountY) {
                 geneCounterY++;
                 weakGenesRating = weakGenesRating + 1;
               } else {
@@ -236,7 +294,7 @@ export default function Home() {
               }
             }
           } else if (gene.includes("g")) {
-            if (geneCounterG < perfectHempSeedG) {
+            if (geneCounterG < geneCountG) {
               geneCounterG++;
               weakGenesRating = weakGenesRating + 1;
             } else {
@@ -276,7 +334,7 @@ export default function Home() {
             if (gene.includes("g")) {
               weakGenesRating = weakGenesRating + 1;
             } else {
-              if (geneCounterY < perfectHempSeedY) {
+              if (geneCounterY < geneCountY) {
                 geneCounterY++;
                 weakGenesRating = weakGenesRating + 1;
               } else {
@@ -285,7 +343,7 @@ export default function Home() {
               }
             }
           } else if (gene.includes("g")) {
-            if (geneCounterG < perfectHempSeedG) {
+            if (geneCounterG < geneCountG) {
               geneCounterG++;
               weakGenesRating = weakGenesRating + 1;
             } else {
@@ -331,8 +389,8 @@ export default function Home() {
         usableGeneList_y = [];
       }
     });
-    needG = perfectHempSeedG - cloneWithHighestRating.g;
-    needY = perfectHempSeedY - cloneWithHighestRating.y;
+    needG = geneCountG - cloneWithHighestRating.g;
+    needY = geneCountY - cloneWithHighestRating.y;
   }
 
   function findClonesForCrossbreedingR1(list) {
@@ -814,6 +872,23 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <h1 id="title">The Rust Crossbreeder </h1>
+      <h3 id="userInputHeader">Set The Amount of G/Y Genes for your desired Crossbreed Result </h3>
+      <h4 id="defaultGenes">
+        default is 4 <span className="green">Y</span> 2 <span className="green">G</span>{" "}
+      </h4>
+      <h4 id="customGenes" className="hidden">
+        you set {geneCountY} <span className="green">Y</span> {geneCountG} <span className="green">G</span>{" "}
+      </h4>
+      <div className="column">
+        <div>
+          <label htmlFor="y">Amount of Y-Genes: </label>
+          <input onChange={(e) => perfectClone(e)} type="number" id="y" name="gene" step="1" />
+        </div>
+        <div>
+          <label htmlFor="g">Amount of G-Genes: </label>
+          <input onChange={(e) => perfectClone(e)} type="number" id="g" name="gene" step="1" />
+        </div>
+      </div>
       <label id="label" htmlFor="0">
         Enter Genes:
       </label>
