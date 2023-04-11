@@ -3,13 +3,15 @@ import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { useState } from "react";
 import cloneDeep from "lodash/cloneDeep";
+import { useCookies } from "react-cookie";
 
 export default function Home() {
   const [secondBestCrossbreedR, setSecondBestCrossbreedR] = useState({});
   const [resultCrossbreedList, setCrossbreedList] = useState([]);
   const [crossbreedR, setcrossbreedR] = useState({});
   let [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
-
+  const [cookies, setCookie] = useCookies(["cloneList"]);
+  let test = [];
   let genePool = [];
   let commonGeneList = [];
   let geneWeightingList = [];
@@ -76,9 +78,9 @@ export default function Home() {
   };
   // Hide method from for-in loops
   Object.defineProperty(Array.prototype, "equals", { enumerable: false });
-  if (typeof window !== "undefined") {
+  /*   if (typeof window !== "undefined") {
     document.getElementById("0").focus();
-  }
+  } */
   function addGenes(e) {
     if (e) {
       if (e.target.value === "x" || e.target.value === "w") {
@@ -112,6 +114,7 @@ export default function Home() {
     if (e.key === "Enter") {
       addClone();
     }
+    console.log(cookies.cloneList);
   }
   function handleKeyDown(e) {
     if (e.key === "Backspace") {
@@ -133,7 +136,18 @@ export default function Home() {
     if (!clone) {
       return;
     }
+
     genePool.push(clone.slice());
+
+    if (cookies.cloneList) {
+      test = cookies.cloneList;
+    }
+
+    genePool.map((clone) => {
+      test.push(clone);
+    });
+
+    setCookie("cloneList", test, { path: "/" });
     const inputFields = document.querySelectorAll(".geneInput");
     inputFields.forEach((input) => {
       input.value = "";
@@ -145,10 +159,18 @@ export default function Home() {
     document.getElementById("0").focus();
   }
 
+  function clearList() {
+    setCookie("cloneList", [], { path: "/" });
+  }
+
   function crossbreed() {
     let cloneList = [];
-    giveGeneWeighting(genePool, geneWeightingList);
-    rateClone(genePool, cloneList, geneWeightingList);
+    giveGeneWeighting(cookies.cloneList, geneWeightingList);
+    rateClone(cookies.cloneList, cloneList, geneWeightingList);
+    console.log("cloneList");
+    console.log(cloneList);
+    console.log("cookies.cloneList");
+    console.log(cookies.cloneList);
     findBestClone(cloneList);
     findClonesForCrossbreedingR1(cloneList);
     findClonesForCrossbreedingR2(cloneList);
@@ -313,98 +335,6 @@ export default function Home() {
     needY = perfectHempSeedY - cloneWithHighestRating.y;
   }
 
-  /* function findUsableClones(geneCount, gene, list) {
-    //how many G or Y Genes does the best Clone need
-    //If it needs both G and Y Genes it loops through the bad positions of the cloneWithHighestRating(CWHR)
-    //for each bad gene Position of the CWHR it searches the "genePool" for g or y genes at the same position
-
-    //Braucht der Clone G Gene?
-    if (gene === "y") {
-      usableGeneList(usableGeneList_y, list);
-    } else {
-      usableGeneList(usableGeneList_g, list);
-    }
-
-    function usableGeneList(usableList, list) {
-      if (geneCount > 0) {
-        cloneListCopy = cloneDeep(list); //create deep copies here to later maipulate their values without touching the originals.
-        for (let i = 0; i < usableList.length; i++) {
-          for (let j = 0; j < cloneListCopy.length; j++) {
-            if (usableList[i].clone.clone.equals(cloneListCopy[j].clone)) {
-              cloneListCopy.splice(j, 1); //if there has been a previous Call of this function (by adding a new Clone)
-            } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
-          } //because the copy of the original will reinclude them every time we add a new Clone.
-        } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
-
-        for (let j = 0; j < cloneWithHighestRating.positionBadGenes.length; j++) {
-          let currentBadGenePosition = cloneWithHighestRating.positionBadGenes[j];
-
-          for (let i = 0; i < cloneListCopy.length; i++) {
-            let currentGene = cloneListCopy[i].clone[currentBadGenePosition];
-            if (currentGene === gene) {
-              //so in case of a match of the gene on the position we need
-              usableList.push({
-                position: currentBadGenePosition,
-                clone: cloneListCopy[i],
-              });
-              if (i === 5) {
-                cloneListCopy.splice(i, 1);
-              }
-            }
-          }
-        }
-      }
-      if (geneCount < 0) {
-        //falls der Clone zu viele, also mehr als 4, Y/G Gene hat, dann hat er keine schlechten Gene an diesen Positionen. Dann muss für jedes benötigte G-Gen ein beliebiges Y-Gen ersetzt werden.
-        geneCount = geneCount * -1; //negativ wird positiv
-        let searchedGene = "";
-        let cloneListCopy = cloneDeep(list);
-
-        if (gene === "y") {
-          searchedGene = "g";
-        } else {
-          searchedGene = "y";
-        }
-
-        for (let j = 0; j < usableList.length; j++) {
-          for (let k = 0; k < cloneListCopy.length; k++) {
-            if (usableList[j].clone.clone.equals(cloneListCopy[k].clone)) {
-              cloneListCopy.splice(k, 1); //if there has been a previous Call of this function (by adding a new Clone)
-            } //there might be usable Y Clones already. If so: remove them from the copied cloneList again
-          } //because the copy of the original will reinclude them every time we add a new Clone.
-        } //This would cause the function to find a match for the same Clone every time we iterate through the Copy.
-
-        for (let i = cloneListCopy.length - 1; i >= 0; i--) {
-          //jedes CWHR-Gen wird durchsucht
-          //An jeder Stelle an der es das entsprechende Gen hat ist ein potentieller Austausch mit anderen Clonen möglich.
-
-          for (let l = 0; l < 6; l++) {
-            if (cloneListCopy[i].clone[l] === searchedGene) {
-              if (cloneWithHighestRating.clone[l] === gene) {
-                foundGene = true;
-                // wird die CloneList nach dem Benötigten Gen an dieser Position durchsucht (wenn gene = "y" wird "g" benötigt)
-                // wenn gefunden, wird der Clone gespeichert und wird aus der Liste entfernt
-
-                let clone = cloneDeep(cloneListCopy[i]);
-                usableList.push({ clone: clone, position: l });
-                /*                 usablePositionExists = list.find((el) => el.position === l); //Wenn ein Clone für eine Position hinzugefügt wird, er aber noch eine weitere position mit dem gesuchten gen hat, wird er nur für diejenige gefunden für die er hinzugefügt wurde. Es sollten vielleicht nicht nur Clone deren Genposition bei mindestens zwei Clonen enthalten sind hinzugefügt werden.
-                if (usablePositionExists) {
-                  list.push({ clone: clone, position: l });
-                  usablePositionExists = "";
-                } */
-  /*      }
-            }
-
-            if (l === 5 && foundGene === true) {
-              cloneListCopy.splice(i, 1);
-              foundGene = false;
-            }
-          }
-        }
-      }
-    }
-  }  */
-
   function findClonesForCrossbreedingR1(list) {
     //alle clone deren positionen 2 oder mehrmals vorkommen in list Liste werden in list gepusht.
 
@@ -488,9 +418,7 @@ export default function Home() {
       if (clone.rating > bestRating) {
         bestRating = clone.rating;
 
-        if (bestRating <= cloneWithHighestRating.rating && list.length >= 3) {
-          needR2 = true;
-        } else if (bestRating > cloneWithHighestRating.rating) {
+        if (bestRating > cloneWithHighestRating.rating) {
           setcrossbreedR({
             cloneA: list[clone.crossbreedPartners[0]].clone,
             cloneB: list[clone.crossbreedPartners[1]].clone,
@@ -506,10 +434,6 @@ export default function Home() {
   }
 
   function findClonesForCrossbreedingR2(list) {
-    if (needR2 !== true) {
-      return;
-    }
-
     if (list.length <= 1) {
       return;
     }
@@ -744,7 +668,7 @@ export default function Home() {
       return (
         <div>
           <h1 className="red">Feed me more clones </h1>
-          <h3>results aren't better than your Best Clone!</h3>
+          <h3>results aren`&apos;`t better than your Best Clone!</h3>
           <p>Best clone:</p>
           <div className="clone">
             {cloneWithHighestRating.clone.map((gene) => {
@@ -860,6 +784,28 @@ export default function Home() {
     }
   }
 
+  function renderCloneList() {
+    if (cookies.cloneList) {
+      return (
+        <div>
+          {cookies.cloneList.map((clone) => {
+            return (
+              <div key={clone} className="clone">
+                {clone.map((gene) => {
+                  if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+                    return <p className="green">{gene}</p>;
+                  } else {
+                    return <p className="red">{gene}</p>;
+                  }
+                })}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -871,7 +817,7 @@ export default function Home() {
       <label id="label" htmlFor="0">
         Enter Genes:
       </label>
-      <div className="flex">
+      <div className="flex1">
         <input
           className="geneInput"
           type="text"
@@ -969,13 +915,19 @@ export default function Home() {
           }
         ></input>
         <button onClick={addClone}>Add Clone</button>
-        <button onClick={crossbreed} formAction="">
-          Start Crossbreed
+        <button onClick={crossbreed}>Start Crossbreed</button>
+        <button className="delete" onClick={clearList}>
+          Clear List
         </button>
       </div>
 
       <div className="flex">
         <div>{renderCrossbreedResult()}</div>
+        <div>
+          <h1>Your List </h1>
+
+          {renderCloneList()}
+        </div>
       </div>
     </div>
   );

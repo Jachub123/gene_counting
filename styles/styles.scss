@@ -8,6 +8,10 @@ body {
   width: 100%;
   display: flex;
   flex-direction: row;
+  column-gap: 2rem;
+  div {
+    flex-basis: 50%;
+  }
 }
 
 #title {
@@ -20,7 +24,11 @@ body {
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
-
+.line {
+  height: 1px;
+  background-color: white;
+  width: 50%;
+}
 .geneInput {
   width: 6rem;
   height: 4rem;
@@ -61,7 +69,9 @@ button {
     background-color: rgb(43, 43, 43);
   }
 }
-
+.delete {
+  background-color: #f04124;
+}
 .goodGene {
   color: white;
   font-size: 1.5rem;
