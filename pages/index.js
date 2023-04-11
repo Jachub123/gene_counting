@@ -83,7 +83,7 @@ export default function Home() {
   } */
   function addGenes(e) {
     if (e) {
-      if (e.target.value === "x" || e.target.value === "w") {
+      if (e.target.value.toLowerCase() === "x" || e.target.value.toLowerCase() === "w") {
         e.target.classList.add("badGene");
         e.target.classList.remove("goodGene");
       } else {
@@ -93,7 +93,7 @@ export default function Home() {
     }
     for (let i = 0; i < 6; i++) {
       if (clone) {
-        clone[i] = document.getElementById(i).value;
+        clone[i] = document.getElementById(i).value.toLowerCase();
         if (clone[i] === "") {
           clone = false;
           return;
@@ -101,7 +101,7 @@ export default function Home() {
       } else {
         if (clone[i] !== "") {
           clone = [];
-          clone[i] = document.getElementById(i).value;
+          clone[i] = document.getElementById(i).value.toLowerCase();
         } else {
           clone = false;
           return;
@@ -825,11 +825,11 @@ export default function Home() {
           onKeyDown={(e) => handleKeyDown(e)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
-            e.target.value === "y" ||
-            e.target.value === "g" ||
-            e.target.value === "h" ||
-            e.target.value === "x" ||
-            e.target.value === "w"
+            e.target.value.toLowerCase() === "y" ||
+            e.target.value.toLowerCase() === "g" ||
+            e.target.value.toLowerCase() === "h" ||
+            e.target.value.toLowerCase() === "x" ||
+            e.target.value.toLowerCase() === "w"
               ? (addGenes(e), document.getElementById("1").focus())
               : (e.target.value = "")
           }
@@ -841,11 +841,11 @@ export default function Home() {
           onKeyDown={(e) => handleKeyDown(e)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
-            e.target.value === "y" ||
-            e.target.value === "g" ||
-            e.target.value === "h" ||
-            e.target.value === "x" ||
-            e.target.value === "w"
+            e.target.value.toLowerCase() === "y" ||
+            e.target.value.toLowerCase() === "g" ||
+            e.target.value.toLowerCase() === "h" ||
+            e.target.value.toLowerCase() === "x" ||
+            e.target.value.toLowerCase() === "w"
               ? (addGenes(e), document.getElementById("2").focus())
               : (e.target.value = "")
           }
@@ -857,11 +857,11 @@ export default function Home() {
           onKeyDown={(e) => handleKeyDown(e)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
-            e.target.value === "y" ||
-            e.target.value === "g" ||
-            e.target.value === "h" ||
-            e.target.value === "x" ||
-            e.target.value === "w"
+            e.target.value.toLowerCase() === "y" ||
+            e.target.value.toLowerCase() === "g" ||
+            e.target.value.toLowerCase() === "h" ||
+            e.target.value.toLowerCase() === "x" ||
+            e.target.value.toLowerCase() === "w"
               ? (addGenes(e), document.getElementById("3").focus())
               : (e.target.value = "")
           }
@@ -873,11 +873,11 @@ export default function Home() {
           onKeyDown={(e) => handleKeyDown(e)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
-            e.target.value === "y" ||
-            e.target.value === "g" ||
-            e.target.value === "h" ||
-            e.target.value === "x" ||
-            e.target.value === "w"
+            e.target.value.toLowerCase() === "y" ||
+            e.target.value.toLowerCase() === "g" ||
+            e.target.value.toLowerCase() === "h" ||
+            e.target.value.toLowerCase() === "x" ||
+            e.target.value.toLowerCase() === "w"
               ? (addGenes(e), document.getElementById("4").focus())
               : (e.target.value = "")
           }
@@ -889,11 +889,11 @@ export default function Home() {
           onKeyDown={(e) => handleKeyDown(e)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
-            e.target.value === "y" ||
-            e.target.value === "g" ||
-            e.target.value === "h" ||
-            e.target.value === "x" ||
-            e.target.value === "w"
+            e.target.value.toLowerCase() === "y" ||
+            e.target.value.toLowerCase() === "g" ||
+            e.target.value.toLowerCase() === "h" ||
+            e.target.value.toLowerCase() === "x" ||
+            e.target.value.toLowerCase() === "w"
               ? (addGenes(e), document.getElementById("5").focus())
               : (e.target.value = "")
           }
@@ -905,11 +905,11 @@ export default function Home() {
           onKeyDown={(e) => handleKeyDown(e)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
-            e.target.value === "y" ||
-            e.target.value === "g" ||
-            e.target.value === "h" ||
-            e.target.value === "x" ||
-            e.target.value === "w"
+            e.target.value.toLowerCase() === "y" ||
+            e.target.value.toLowerCase() === "g" ||
+            e.target.value.toLowerCase() === "h" ||
+            e.target.value.toLowerCase() === "x" ||
+            e.target.value.toLowerCase() === "w"
               ? addGenes(e)
               : (e.target.value = "")
           }
