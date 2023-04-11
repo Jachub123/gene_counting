@@ -914,13 +914,14 @@ export default function Home() {
               : (e.target.value = "")
           }
         ></input>
+      </div>
+      <div className="flex1 break">
         <button onClick={addClone}>Add Clone</button>
         <button onClick={crossbreed}>Start Crossbreed</button>
         <button className="delete" onClick={clearList}>
           Clear List
         </button>
       </div>
-
       <div className="flex">
         <div>{renderCrossbreedResult()}</div>
         <div>
