@@ -872,7 +872,10 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <h1 id="title">The Rust Crossbreeder </h1>
+      <div className="titleContainer">
+        <h1 id="title">The Rust Crossbreeder </h1>
+        <h4 className="by">by Jachub123</h4>
+      </div>
       <h3 id="userInputHeader">Set The Amount of G/Y Genes for your desired Crossbreed Result </h3>
       <h4 id="defaultGenes">
         default is 4 <span className="green">Y</span> 2 <span className="green">G</span>{" "}
@@ -1008,6 +1011,20 @@ export default function Home() {
       </div>
 
       <Analytics />
+      <div class="powr-form-builder" id="18a39f72_1681306315"></div>
+      <script src="https://www.powr.io/powr.js?platform=html"></script>
+      <form className="donate" action="https://www.paypal.com/donate" method="post" target="_top">
+        <input type="hidden" name="hosted_button_id" value="YSS2VHFZ8FPC2" />
+        <input
+          type="image"
+          src="https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif"
+          border="0"
+          name="submit"
+          title="PayPal - The safer, easier way to pay online!"
+          alt="Donate with PayPal button"
+        />
+        <img alt="" border="0" src="https://www.paypal.com/en_DE/i/scr/pixel.gif" width="1" height="1" />
+      </form>
     </div>
   );
 }
