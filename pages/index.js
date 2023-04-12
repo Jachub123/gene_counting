@@ -5,6 +5,8 @@ import { useState } from "react";
 import cloneDeep from "lodash/cloneDeep";
 import { useCookies } from "react-cookie";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
+import paypalImg from "/public/btn_donateCC_LG.gif";
 
 export default function Home() {
   const [secondBestCrossbreedR, setSecondBestCrossbreedR] = useState({});
@@ -1012,7 +1014,7 @@ export default function Home() {
 
       <Analytics />
       <div className="powr-form-builder" id="18a39f72_1681306315"></div>
-      <script src="https://www.powr.io/powr.js?platform=html"></script>
+      <Script src="https://www.powr.io/powr.js?platform=html"></Script>
       <form className="donate" action="https://www.paypal.com/donate" method="post" target="_top">
         <input type="hidden" name="hosted_button_id" value="YSS2VHFZ8FPC2" />
         <input
@@ -1023,7 +1025,7 @@ export default function Home() {
           title="PayPal - The safer, easier way to pay online!"
           alt="Donate with PayPal button"
         />
-        <img alt="" border="0" src="https://www.paypal.com/en_DE/i/scr/pixel.gif" width="1" height="1" />
+        <Image alt="" border="0" src={paypalImg} width="1" height="1" />
       </form>
     </div>
   );
