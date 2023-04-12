@@ -9,8 +9,8 @@ import { Analytics } from "@vercel/analytics/react";
 export default function Home() {
   const [secondBestCrossbreedR, setSecondBestCrossbreedR] = useState({});
   const [resultCrossbreedList, setCrossbreedList] = useState([]);
-  const [geneCountG, setGeneCountG] = useState();
-  const [geneCountY, setGeneCountY] = useState();
+  const [geneCountG, setGeneCountG] = useState(2);
+  const [geneCountY, setGeneCountY] = useState(4);
   const [crossbreedR, setcrossbreedR] = useState({});
   let [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
   const [cookies, setCookie] = useCookies(["cloneList"]);
@@ -868,7 +868,7 @@ export default function Home() {
     <div className={styles.container}>
       <Head>
         <title>Crossbreeder For Rust</title>
-        <meta name="description" content="Crossbreeder for Hemp and Berrie Clones" />
+        <meta name="description" content="Rust Crossbreeder for Hemp and Berrie Clones" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
