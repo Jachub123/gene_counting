@@ -70,10 +70,10 @@ html {
   width: fit-content;
   font-size: 4rem;
 }
+
 #label {
   display: block;
   font-size: 2rem;
-  margin-bottom: 0.5rem;
 }
 .line {
   height: 1px;
@@ -92,11 +92,19 @@ html {
   align-items: center;
   span {
     display: block !important;
-    height: 50px !important;
-    width: 50px !important;
+    height: 2rem !important;
+    width: 2rem !important;
     cursor: pointer;
     margin-right: 0.5rem !important;
+    overflow: visible !important;
+    img {
+      min-width: 2rem !important;
+      max-width: 2rem !important;
+      min-height: 2rem !important;
+      max-height: 2rem !important;
+    }
   }
+
   p {
     width: 16%;
     height: 3rem;
@@ -129,6 +137,9 @@ h4 {
   display: flex;
   flex-direction: column;
   margin-bottom: 2rem;
+  div {
+    margin-bottom: 0.75rem;
+  }
 }
 input[type="number"] {
   width: 40px;
