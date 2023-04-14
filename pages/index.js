@@ -1,6 +1,8 @@
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../styles/Home.module.css";
+import deleteImg from "/public/delete.png";
 import { useState } from "react";
 import cloneDeep from "lodash/cloneDeep";
 import { useCookies } from "react-cookie";
@@ -16,7 +18,7 @@ export default function Home() {
   const [crossbreedR, setcrossbreedR] = useState({});
   let [cloneWithHighestRating, setCloneWithHighestRating] = useState([]);
   const [cookies, setCookie] = useCookies(["cloneList"]);
-  let test = [];
+  let cookieCache = [];
   let genePool = [];
   let commonGeneList = [];
   let geneWeightingList = [];
@@ -97,12 +99,7 @@ export default function Home() {
     } else {
       otherValue = yCount;
     }
-    console.log("gCount + yCount");
-    console.log(Number(gCount) + Number(yCount));
-    console.log("gCount");
-    console.log(gCount);
-    console.log("otherValue");
-    console.log(otherValue);
+
     if (Number(gCount) + Number(yCount) > 6 || gene.target.value < 0) {
       gene.target.value = 6 - otherValue;
       if (gene.target.id === "y") {
@@ -114,16 +111,11 @@ export default function Home() {
         perfectHempSeedG = gene.target.value;
         perfectHempSeedY = otherValue;
       }
-      console.log("> 6");
-      console.log(perfectHempSeedY);
-      console.log(perfectHempSeedG);
     }
     if (Number(gCount) + Number(yCount) === 6) {
       perfectHempSeedY = yCount;
       perfectHempSeedG = gCount;
-      console.log("=== 6");
-      console.log(perfectHempSeedY);
-      console.log(perfectHempSeedG);
+
       setGeneCountG(perfectHempSeedG);
       setGeneCountY(perfectHempSeedY);
       document.getElementById("defaultGenes").classList.add("hidden");
@@ -131,7 +123,7 @@ export default function Home() {
     } else {
       document.getElementById("defaultGenes").classList.remove("hidden");
       document.getElementById("customGenes").classList.add("hidden");
-      console.log("42 blaze it");
+
       setGeneCountG(2);
       setGeneCountY(4);
     }
@@ -170,7 +162,6 @@ export default function Home() {
     if (e.key === "Enter") {
       addClone();
     }
-    console.log(cookies.cloneList);
   }
   function handleKeyDown(e) {
     if (e.key === "Backspace") {
@@ -196,14 +187,14 @@ export default function Home() {
     genePool.push(clone.slice());
 
     if (cookies.cloneList) {
-      test = cookies.cloneList;
+      cookieCache = cookies.cloneList;
     }
 
     genePool.map((clone) => {
-      test.push(clone);
+      cookieCache.push(clone);
     });
 
-    setCookie("cloneList", test, { path: "/" });
+    setCookie("cloneList", cookieCache, { path: "/" });
     const inputFields = document.querySelectorAll(".geneInput");
     inputFields.forEach((input) => {
       input.value = "";
@@ -223,14 +214,10 @@ export default function Home() {
     let cloneList = [];
     giveGeneWeighting(cookies.cloneList, geneWeightingList);
     rateClone(cookies.cloneList, cloneList, geneWeightingList);
-    console.log("cloneList");
-    console.log(cloneList);
+
     console.log("cookies.cloneList");
     console.log(cookies.cloneList);
-    console.log("perfectHempSeedG");
-    console.log(perfectHempSeedG);
-    console.log("perfectHempSeedY");
-    console.log(perfectHempSeedY);
+
     findBestClone(cloneList);
     findClonesForCrossbreedingR1(cloneList);
     findClonesForCrossbreedingR2(cloneList);
@@ -844,13 +831,24 @@ export default function Home() {
     }
   }
 
+  function deleteClone(e) {
+    cookies.cloneList.map((clone, index) => {
+      if (clone.equals(cookies.cloneList[e])) {
+        cookies.cloneList.splice(index, 1);
+        setCookie("cloneList", cookies.cloneList, { path: "/" });
+      }
+    });
+  }
+
   function renderCloneList() {
     if (cookies.cloneList) {
       return (
         <div>
-          {cookies.cloneList.map((clone) => {
+          {cookies.cloneList.map((clone, index) => {
             return (
               <div key={clone} className="clone">
+                <Image onClick={() => deleteClone(index)} className="deleteClone" alt="delete Clone" src={deleteImg} />
+
                 {clone.map((gene) => {
                   if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
                     return <p className="green">{gene}</p>;
@@ -872,7 +870,7 @@ export default function Home() {
         <title>Crossbreeder For Rust</title>
         <meta name="description" content="Rust Crossbreeder for Hemp and Berrie Clones" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/Hemp.png" />
       </Head>
       <div className="titleContainer">
         <h1 id="title">The Rust Crossbreeder </h1>

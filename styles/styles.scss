@@ -89,6 +89,14 @@ html {
 
 .clone {
   display: flex;
+  align-items: center;
+  span {
+    display: block !important;
+    height: 50px !important;
+    width: 50px !important;
+    cursor: pointer;
+    margin-right: 0.5rem !important;
+  }
   p {
     width: 16%;
     height: 3rem;
@@ -150,6 +158,7 @@ button {
 .delete {
   background-color: #f04124;
 }
+
 .goodGene {
   color: white;
   font-size: 1.5rem;
