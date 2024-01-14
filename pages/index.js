@@ -131,7 +131,10 @@ export default function Home() {
 
   function addGenes(e) {
     if (e) {
-      if (e.target.value.toLowerCase() === "x" || e.target.value.toLowerCase() === "w") {
+      if (
+        e.target.value.toLowerCase() === "x" ||
+        e.target.value.toLowerCase() === "w"
+      ) {
         e.target.classList.add("badGene");
         e.target.classList.remove("goodGene");
       } else {
@@ -158,24 +161,127 @@ export default function Home() {
     }
   }
 
+  /*   function handleKeyDown(e) {
+    let pastedArray = [];
+    let index = 0;
+    console.log(e.target.id);
+    e.target.addEventListener("keydown", (event) => {
+      if (event.key === "v" && e.key === "Control") {
+        e.target.addEventListener("input", () => {
+          pastedArray = e.target.value.split("");
+          console.log(pastedArray);
+          pastedArray.forEach((char) => {
+            if (
+              char !== " " &&
+              (char === "y" ||
+                char === "g" ||
+                char === "h" ||
+                char === "x" ||
+                char === "w")
+            ) {
+              if (char.toLowerCase() === "x" || char.toLowerCase() === "w") {
+                document.getElementById(index).classList.add("badGene");
+                document.getElementById(index).classList.remove("goodGene");
+              } else {
+                document.getElementById(index).classList.add("goodGene");
+                document.getElementById(index).classList.remove("badGene");
+              }
+              document.getElementById(index).value = char;
+              index++;
+            }
+          });
+        });
+      } else {
+        console.log(event.key);
+        /* if (
+          event.key.toLowerCase() === "y" ||
+          event.key.toLowerCase() === "g" ||
+          event.key.toLowerCase() === "h" ||
+          event.key.toLowerCase() === "x" ||
+          event.key.toLowerCase() === "w"
+        ) {
+          document.getElementById(event.target.id + 1).focus();
+        } else {
+          document.getElementById(event.target.id).value = "";
+        }
+
+        
+
+        if (event.key === "Backspace") {
+          event.target.classList.remove("badGene");
+          event.target.classList.remove("goodGene");
+          if (event.target.value === "") {
+            if (event.target.id - 1 < 0) {
+              return;
+            }
+            document
+              .getElementById(event.target.id - 1)
+              .classList.remove("badGene");
+            document
+              .getElementById(event.target.id - 1)
+              .classList.remove("goodGene");
+            document.getElementById(event.target.id - 1).focus();
+          }
+        } else {
+          addGenes(e);
+
+          let id = parseInt(e.target.id) + 1;
+          console.log(id);
+          document.getElementById(id.toString()).focus();
+        }
+      }
+    });
+  } */
+
   function handleKeyPress(e) {
     if (e.key === "Enter") {
       addClone();
     }
   }
-  function handleKeyDown(e) {
+
+  function keyDown(e, id) {
     if (e.key === "Backspace") {
       e.target.classList.remove("badGene");
       e.target.classList.remove("goodGene");
       if (e.target.value === "") {
-        if (e.target.id - 1 < 0) {
+        if (id - 1 < 0) {
           return;
         }
-        document.getElementById(e.target.id - 1).classList.remove("badGene");
-        document.getElementById(e.target.id - 1).classList.remove("goodGene");
-        document.getElementById(e.target.id - 1).focus();
+        document.getElementById(id - 1).classList.remove("badGene");
+        document.getElementById(id - 1).classList.remove("goodGene");
+        document.getElementById(id - 1).focus();
       }
     }
+  }
+
+  function paste(e) {
+    e.preventDefault();
+    let pastedArray = e.clipboardData.getData("Text").split("");
+    console.log(e);
+    let i = 0;
+    pastedArray.map((letter) => {
+      if (
+        letter === "y" ||
+        letter === "g" ||
+        letter === "h" ||
+        letter === "x" ||
+        letter === "w"
+      ) {
+        if (letter === "w" || letter === "x") {
+          document.getElementById(i).classList.add("badGene");
+          document.getElementById(i).classList.remove("goodGene");
+          document.getElementById(i).value = letter;
+          console.log(i);
+        } else {
+          document.getElementById(i).classList.add("goodGene");
+          document.getElementById(i).classList.remove("badGene");
+          document.getElementById(i).value = letter;
+          console.log(i);
+        }
+        document.getElementById(i).focus();
+        i++;
+      }
+    });
   }
 
   function addClone() {
@@ -429,7 +535,9 @@ export default function Home() {
               //wenn Erstes und Zweites gleich sind
               if (cloneBWeighting === cloneDWeighting) {
                 //Wenn alle gleich sind
-                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + cloneD); //werden alle überführt
+                potentialCrossbreedClone.push(
+                  cloneA + "/" + cloneB + "/" + cloneD
+                ); //werden alle überführt
               } else if (cloneDWeighting > cloneBWeighting) {
                 potentialCrossbreedClone.push(cloneD);
               } else {
@@ -449,7 +557,10 @@ export default function Home() {
             }
 
             if (l === 5) {
-              crossbreedList.push({ clone: potentialCrossbreedClone, crossbreedClones: [j, k, m] });
+              crossbreedList.push({
+                clone: potentialCrossbreedClone,
+                crossbreedClones: [j, k, m],
+              });
               //Wenn alle Gene des Clones überführt wurden muss der potentielle Crossbreed Clone gewichtet werden. Und die Gewichtung mit der des Besten Clones verglichen werden.
               potentialCrossbreedClone = [];
             }
@@ -589,7 +700,9 @@ export default function Home() {
                 cloneAWeighting === cloneDWeighting &&
                 cloneAWeighting === cloneCWeighting
               ) {
-                potentialCrossbreedClone.push(cloneA + "/" + cloneB + "/" + cloneD + "/" + cloneC);
+                potentialCrossbreedClone.push(
+                  cloneA + "/" + cloneB + "/" + cloneD + "/" + cloneC
+                );
               } else if (
                 cloneAWeighting > cloneBWeighting &&
                 cloneAWeighting > cloneCWeighting &&
@@ -664,7 +777,10 @@ export default function Home() {
                 }
               }
               if (m === 5) {
-                crossbreedList.push({ clone: potentialCrossbreedClone, crossbreedClones: [j, k, l, n] });
+                crossbreedList.push({
+                  clone: potentialCrossbreedClone,
+                  crossbreedClones: [j, k, l, n],
+                });
                 potentialCrossbreedClone = [];
               }
 
@@ -711,7 +827,10 @@ export default function Home() {
   function renderCrossbreedResult() {
     if (Object.values(crossbreedR).length === 0) {
       return <h1>Feed me clones!</h1>;
-    } else if (resultCrossbreedList.length > 0 && Object.values(crossbreedR).length === 0) {
+    } else if (
+      resultCrossbreedList.length > 0 &&
+      Object.values(crossbreedR).length === 0
+    ) {
       return (
         <div>
           <h1 className="red">Feed me more clones </h1>
@@ -719,7 +838,11 @@ export default function Home() {
           <p>Best clone:</p>
           <div className="clone">
             {cloneWithHighestRating.clone.map((gene) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -729,7 +852,11 @@ export default function Home() {
           <p>Best result:</p>
           <div className="clone">
             {secondBestCrossbreedR.cloneA.map((gene, index) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -738,7 +865,11 @@ export default function Home() {
           </div>
           <div className="clone">
             {secondBestCrossbreedR.cloneB.map((gene, index) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -747,7 +878,11 @@ export default function Home() {
           </div>
           <div className="clone">
             {secondBestCrossbreedR.cloneC.map((gene, index) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -756,7 +891,11 @@ export default function Home() {
           </div>
           <div className="clone">
             {secondBestCrossbreedR.cloneD.map((gene, index) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -765,7 +904,11 @@ export default function Home() {
           </div>
           <div className="clone">
             {secondBestCrossbreedR.result.map((gene, index) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -780,7 +923,11 @@ export default function Home() {
           <h1>I have a result:</h1>
           <div className="clone">
             {crossbreedR.cloneA.map((gene) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -789,7 +936,11 @@ export default function Home() {
           </div>
           <div className="clone">
             {crossbreedR.cloneB.map((gene) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -799,7 +950,11 @@ export default function Home() {
           <div className="clone">
             {crossbreedR.cloneC
               ? crossbreedR.cloneC.map((gene) => {
-                  if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+                  if (
+                    gene.includes("y") ||
+                    gene.includes("h") ||
+                    gene.includes("g")
+                  ) {
                     return <p className="green">{gene}</p>;
                   } else {
                     return <p className="red">{gene}</p>;
@@ -809,7 +964,11 @@ export default function Home() {
           </div>
           <div className="clone">
             {crossbreedR.cloneD.map((gene) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -819,7 +978,11 @@ export default function Home() {
           <div className="line"></div>
           <div className="clone">
             {crossbreedR.result.map((gene) => {
-              if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+              if (
+                gene.includes("y") ||
+                gene.includes("h") ||
+                gene.includes("g")
+              ) {
                 return <p className="green">{gene}</p>;
               } else {
                 return <p className="red">{gene}</p>;
@@ -847,10 +1010,19 @@ export default function Home() {
           {cookies.cloneList.map((clone, index) => {
             return (
               <div key={clone} className="clone">
-                <Image onClick={() => deleteClone(index)} className="deleteClone" alt="delete Clone" src={deleteImg} />
+                <Image
+                  onClick={() => deleteClone(index)}
+                  className="deleteClone"
+                  alt="delete Clone"
+                  src={deleteImg}
+                />
 
                 {clone.map((gene) => {
-                  if (gene.includes("y") || gene.includes("h") || gene.includes("g")) {
+                  if (
+                    gene.includes("y") ||
+                    gene.includes("h") ||
+                    gene.includes("g")
+                  ) {
                     return <p className="green">{gene}</p>;
                   } else {
                     return <p className="red">{gene}</p>;
@@ -868,7 +1040,10 @@ export default function Home() {
     <div className={styles.container}>
       <Head>
         <title>Crossbreeder For Rust</title>
-        <meta name="description" content="Rust Crossbreeder for Hemp and Berrie Clones" />
+        <meta
+          name="description"
+          content="Rust Crossbreeder for Hemp and Berrie Clones"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/Hemp.png" />
       </Head>
@@ -876,32 +1051,50 @@ export default function Home() {
         <h1 id="title">The Rust Crossbreeder </h1>
         <h4 className="by">by Jachub123</h4>
       </div>
-      <h3 id="userInputHeader">Set The Amount of G/Y Genes for your desired Crossbreed Result </h3>
+      <h3 id="userInputHeader">
+        Set The Amount of G/Y Genes for your desired Crossbreed Result{" "}
+      </h3>
       <h4 id="defaultGenes">
-        default is 4 <span className="green">Y</span> 2 <span className="green">G</span>{" "}
+        default is 4 <span className="green">Y</span> 2{" "}
+        <span className="green">G</span>{" "}
       </h4>
       <h4 id="customGenes" className="hidden">
-        you set {geneCountY} <span className="green">Y</span> {geneCountG} <span className="green">G</span>{" "}
+        you set {geneCountY} <span className="green">Y</span> {geneCountG}{" "}
+        <span className="green">G</span>{" "}
       </h4>
       <div className="column">
         <div>
           <label htmlFor="y">Amount of Y-Genes: </label>
-          <input onChange={(e) => perfectClone(e)} type="number" id="y" name="gene" step="1" />
+          <input
+            onChange={(e) => perfectClone(e)}
+            type="number"
+            id="y"
+            name="gene"
+            step="1"
+          />
         </div>
         <div>
           <label htmlFor="g">Amount of G-Genes: </label>
-          <input onChange={(e) => perfectClone(e)} type="number" id="g" name="gene" step="1" />
+          <input
+            onChange={(e) => perfectClone(e)}
+            type="number"
+            id="g"
+            name="gene"
+            step="1"
+          />
         </div>
       </div>
       <label id="label" htmlFor="0">
-        Enter Genes:
+        Enter Genes:{" "}
+        <p className="info">(you can now Paste Genes with CTRL + V)</p>
       </label>
       <div className="flex1">
         <input
           className="geneInput"
           type="text"
           id="0"
-          onKeyDown={(e) => handleKeyDown(e)}
+          onPaste={(e) => paste(e)}
+          onKeyDown={(e) => keyDown(e, 0)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
             e.target.value.toLowerCase() === "y" ||
@@ -917,7 +1110,7 @@ export default function Home() {
           className="geneInput"
           type="text"
           id="1"
-          onKeyDown={(e) => handleKeyDown(e)}
+          onKeyDown={(e) => keyDown(e, 1)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
             e.target.value.toLowerCase() === "y" ||
@@ -933,7 +1126,7 @@ export default function Home() {
           className="geneInput"
           type="text"
           id="2"
-          onKeyDown={(e) => handleKeyDown(e)}
+          onKeyDown={(e) => keyDown(e, 2)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
             e.target.value.toLowerCase() === "y" ||
@@ -949,7 +1142,7 @@ export default function Home() {
           className="geneInput"
           type="text"
           id="3"
-          onKeyDown={(e) => handleKeyDown(e)}
+          onKeyDown={(e) => keyDown(e, 3)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
             e.target.value.toLowerCase() === "y" ||
@@ -965,7 +1158,7 @@ export default function Home() {
           className="geneInput"
           type="text"
           id="4"
-          onKeyDown={(e) => handleKeyDown(e)}
+          onKeyDown={(e) => keyDown(e, 4)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
             e.target.value.toLowerCase() === "y" ||
@@ -981,7 +1174,7 @@ export default function Home() {
           className="geneInput"
           type="text"
           id="5"
-          onKeyDown={(e) => handleKeyDown(e)}
+          onKeyDown={(e) => keyDown(e, 5)}
           onKeyUp={(e) => handleKeyPress(e)}
           onChange={(e) =>
             e.target.value.toLowerCase() === "y" ||
@@ -1001,6 +1194,7 @@ export default function Home() {
           Clear List
         </button>
       </div>
+      <input hidden className="geneInput" type="text" id="6"></input>
       <div className="flex">
         <div>{renderCrossbreedResult()}</div>
         <div>
@@ -1013,7 +1207,12 @@ export default function Home() {
       <Analytics />
       <div className="powr-form-builder" id="18a39f72_1681306315"></div>
       <Script src="https://www.powr.io/powr.js?platform=html"></Script>
-      <form className="donate" action="https://www.paypal.com/donate" method="post" target="_top">
+      <form
+        className="donate"
+        action="https://www.paypal.com/donate"
+        method="post"
+        target="_top"
+      >
         <input type="hidden" name="hosted_button_id" value="YSS2VHFZ8FPC2" />
         <input
           type="image"
