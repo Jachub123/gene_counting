@@ -1067,20 +1067,22 @@ export default function Home() {
           <label htmlFor="y">Amount of Y-Genes: </label>
           <input
             onChange={(e) => perfectClone(e)}
-            type="number"
+            type="range"
             id="y"
+            min="0"
+            max="6"
             name="gene"
-            step="1"
           />
         </div>
         <div>
           <label htmlFor="g">Amount of G-Genes: </label>
           <input
             onChange={(e) => perfectClone(e)}
-            type="number"
+            type="range"
             id="g"
+            min="0"
+            max="6"
             name="gene"
-            step="1"
           />
         </div>
       </div>
