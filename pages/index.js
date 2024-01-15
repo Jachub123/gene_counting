@@ -96,10 +96,11 @@ export default function Home() {
     let gCount = document.getElementById("g").value;
     if (gene.target.id === "y") {
       otherValue = gCount;
+      document.getElementById("g").value = 6 - gene.target.value;
     } else {
       otherValue = yCount;
+      document.getElementById("y").value = 6 - gene.target.value;
     }
-
     if (Number(gCount) + Number(yCount) > 6 || gene.target.value < 0) {
       gene.target.value = 6 - otherValue;
       if (gene.target.id === "y") {
