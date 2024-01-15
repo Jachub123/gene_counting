@@ -1082,7 +1082,7 @@ export default function Home() {
           </div>
         </div>
         <h4 id="customGenes">
-          <span>--> </span> you set {geneCountY}{" "}
+          <span>--&gt; </span> you set {geneCountY}{" "}
           <span className="green">Y</span> {geneCountG}{" "}
           <span className="green">G</span>{" "}
         </h4>
