@@ -1056,7 +1056,7 @@ export default function Home() {
         Set The Amount of G/Y Genes for your desired Crossbreed Result{" "}
       </h3>
 
-      <div class="geneContainer">
+      <div className="geneContainer">
         <div className="column">
           <div>
             <label htmlFor="y">Amount of Y-Genes: </label>
