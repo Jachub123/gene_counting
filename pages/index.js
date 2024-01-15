@@ -1055,37 +1055,37 @@ export default function Home() {
       <h3 id="userInputHeader">
         Set The Amount of G/Y Genes for your desired Crossbreed Result{" "}
       </h3>
-      <h4 id="defaultGenes">
-        default is 4 <span className="green">Y</span> 2{" "}
-        <span className="green">G</span>{" "}
-      </h4>
-      <h4 id="customGenes" className="hidden">
-        you set {geneCountY} <span className="green">Y</span> {geneCountG}{" "}
-        <span className="green">G</span>{" "}
-      </h4>
-      <div className="column">
-        <div>
-          <label htmlFor="y">Amount of Y-Genes: </label>
-          <input
-            onChange={(e) => perfectClone(e)}
-            type="range"
-            id="y"
-            min="0"
-            max="6"
-            name="gene"
-          />
+
+      <div class="geneContainer">
+        <div className="column">
+          <div>
+            <label htmlFor="y">Amount of Y-Genes: </label>
+            <input
+              onChange={(e) => perfectClone(e)}
+              type="range"
+              id="y"
+              min="0"
+              max="6"
+              name="gene"
+            />
+          </div>
+          <div>
+            <label htmlFor="g">Amount of G-Genes: </label>
+            <input
+              onChange={(e) => perfectClone(e)}
+              type="range"
+              id="g"
+              min="0"
+              max="6"
+              name="gene"
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor="g">Amount of G-Genes: </label>
-          <input
-            onChange={(e) => perfectClone(e)}
-            type="range"
-            id="g"
-            min="0"
-            max="6"
-            name="gene"
-          />
-        </div>
+        <h4 id="customGenes">
+          <span>--> </span> you set {geneCountY}{" "}
+          <span className="green">Y</span> {geneCountG}{" "}
+          <span className="green">G</span>{" "}
+        </h4>
       </div>
       <label id="label" htmlFor="0">
         Enter Genes:{" "}
